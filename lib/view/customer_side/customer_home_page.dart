@@ -7,6 +7,8 @@ import 'package:get/get.dart';
 
 import '../../common_widget/custom_textField.dart';
 import '../../theme.dart';
+import 'customer_news_view.dart';
+import 'customer_notification_view.dart';
 import 'design_detail.dart';
 import 'customer_profile_view.dart';
 
@@ -55,51 +57,61 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(height: 30),
-                SearchAndProfile(
-                  searchCont: searchCont,
-                  profileonTap: () {
-                    Get.to(CustomerProfileView());
-                  },
-                  newsonPressed: () {},
-                  notionPressed: () {},
+                FadeInDown(
+                  delay: Duration(milliseconds: 500),
+                  child: SearchAndProfile(
+                    searchCont: searchCont,
+                    profileonTap: () {
+                      Get.to(CustomerProfileView());
+                    },
+                    newsonPressed: () {
+                      Get.to(CustomerNewsView());
+                    },
+                    notionPressed: () {
+                      Get.to(CustomerNotificationView());
+                    },
+                  ),
                 ),
                 SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Explore New Designs!",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: TColor.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                  child: FadeInDown(
+                    delay: Duration(milliseconds: 600),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Explore New Designs!",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: TColor.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 20),
-                      SizedBox(
-                        height: height,
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: designImage.length,
-                          itemBuilder: (context, index) {
-                            return InkWell(
-                              onTap: () {
-                                Get.to(DesginDetail());
-                              },
-                              child: DesignTile(
-                                img: designImage[index],
-                                title: designTitles[index],
-                              ),
-                            );
-                          },
+                        SizedBox(height: 20),
+                        SizedBox(
+                          height: height,
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: designImage.length,
+                            itemBuilder: (context, index) {
+                              return InkWell(
+                                onTap: () {
+                                  Get.to(DesginDetail());
+                                },
+                                child: DesignTile(
+                                  img: designImage[index],
+                                  title: designTitles[index],
+                                ),
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 20),
-                    ],
+                        SizedBox(height: 20),
+                      ],
+                    ),
                   ),
                 ),
               ],
