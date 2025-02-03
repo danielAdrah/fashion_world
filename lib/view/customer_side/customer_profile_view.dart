@@ -1,10 +1,10 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, must_be_immutable
 
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../common_widget/custom_appBar.dart';
-import '../../common_widget/primary_button.dart';
 import '../../theme.dart';
 import 'update_personal_info.dart';
 
@@ -33,74 +33,102 @@ class _CustomerProfileViewState extends State<CustomerProfileView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CircleAvatar(
-                      backgroundColor: const Color.fromARGB(255, 212, 210, 210),
-                      radius: 70,
-                      child: Icon(
-                        Icons.person_2_outlined,
-                        size: 55,
+                    FadeInDown(
+                      delay: Duration(milliseconds: 600),
+                      child: CircleAvatar(
+                        backgroundColor:
+                            const Color.fromARGB(255, 212, 210, 210),
+                        radius: 70,
+                        child: Icon(
+                          Icons.person_2_outlined,
+                          size: 55,
+                        ),
                       ),
                     ),
                     SizedBox(height: 30),
-                    Text(
-                      "Personal Information :",
-                      style: TextStyle(
-                        color: TColor.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                    FadeInDown(
+                      delay: Duration(milliseconds: 700),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Personal Information :",
+                            style: TextStyle(
+                              color: TColor.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          TextButton(
+                            child: Text("Change"),
+                            onPressed: () {
+                              Get.to(UpdatePersonalInfo());
+                            },
+                          ),
+                        ],
                       ),
                     ),
-                    Divider(color: TColor.white, endIndent: 110),
-                    SizedBox(height: 40),
-                    InfoTile(
-                      onTap: () {},
-                      name: "Full Name:",
-                      value: "Daniel Adrah",
-                    ),
+                    FadeInDown(
+                        delay: Duration(milliseconds: 700),
+                        child: Divider(color: TColor.white, endIndent: 110)),
                     SizedBox(height: 20),
-                    InfoTile(
-                      onTap: () {},
-                      name: "E-mail:",
-                      value: "www.dado@gmail.com",
-                    ),
-                    SizedBox(height: 20),
-                    Center(
-                      child: PrimaryButton(
-                        title: "Change",
-                        onTap: () {
-                          Get.to(UpdatePersonalInfo());
-                        },
+                    FadeInDown(
+                      delay: Duration(milliseconds: 800),
+                      child: Column(
+                        children: [
+                          InfoTile(
+                            onTap: () {},
+                            name: "Full Name:",
+                            value: "Daniel Adrah",
+                          ),
+                          SizedBox(height: 20),
+                          InfoTile(
+                            onTap: () {},
+                            name: "E-mail:",
+                            value: "www.dado@gmail.com",
+                          ),
+                          SizedBox(height: 40),
+                        ],
                       ),
                     ),
-                    SizedBox(height: 40),
-                    Text(
-                      "Other Options :",
-                      style: TextStyle(
-                        color: TColor.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                    FadeInDown(
+                      delay: Duration(milliseconds: 900),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Other Options :",
+                            style: TextStyle(
+                              color: TColor.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          Divider(color: TColor.white, endIndent: 180),
+                          SizedBox(height: 30),
+                          InfoTile2(
+                            onTap: () {},
+                            name: "Log Out",
+                            value: "",
+                            icon: Icons.logout,
+                          ),
+                          SizedBox(height: 20),
+                          InfoTile2(
+                            onTap: () {},
+                            name: "Delete Account",
+                            value: "",
+                            icon: Icons.delete,
+                          ),
+                          // SizedBox(height: 12),
+                          // Divider(
+                          //     color: TColor.white, endIndent: 25, indent: 25),
+                        ],
                       ),
-                    ),
-                    Divider(color: TColor.white, endIndent: 180),
-                    SizedBox(height: 30),
-                    InfoTile2(
-                      onTap: () {},
-                      name: "Log Out",
-                      value: "",
-                      icon: Icons.logout,
-                    ),
-                    SizedBox(height: 20),
-                    InfoTile2(
-                      onTap: () {},
-                      name: "Delete Account",
-                      value: "",
-                      icon: Icons.delete,
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 12),
-              Divider(color: TColor.white, endIndent: 25, indent: 25),
             ],
           ),
         ),

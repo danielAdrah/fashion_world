@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 
 import '../../common_widget/custom_appBar.dart';
@@ -30,35 +31,38 @@ class _CustomerNotificationViewState extends State<CustomerNotificationView> {
               SizedBox(height: 25),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Notifications",
-                      style: TextStyle(
-                        color: TColor.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
+                child: FadeInDown(
+                  delay: Duration(milliseconds: 600),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Notifications",
+                        style: TextStyle(
+                          color: TColor.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 30),
-                    SizedBox(
-                      height: height,
-                      width: double.infinity,
-                      child: ListView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: 9,
-                          itemBuilder: (context, index) {
-                            return InkWell(
-                              onTap: () {},
-                              child: NotificationTile(
-                                title: "Some content",
-                              ),
-                            );
-                          }),
-                    ),
-                  ],
+                      SizedBox(height: 30),
+                      SizedBox(
+                        height: height,
+                        width: double.infinity,
+                        child: ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: 9,
+                            itemBuilder: (context, index) {
+                              return InkWell(
+                                onTap: () {},
+                                child: NotificationTile(
+                                  title: "Some content",
+                                ),
+                              );
+                            }),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

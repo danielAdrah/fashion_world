@@ -72,6 +72,7 @@ class _LogInState extends State<LogIn> {
                           ),
                           SizedBox(height: 10),
                           CustomTextForm(
+                            prefixIcon: Icon(Icons.mail),
                             secure: false,
                             hinttext: "Enter your e-mail",
                             mycontroller: mailController,
@@ -91,6 +92,7 @@ class _LogInState extends State<LogIn> {
                           ),
                           SizedBox(height: 10),
                           CustomTextForm(
+                            prefixIcon: Icon(Icons.lock_outline),
                             secure: isSecure,
                             hinttext: "Enter your password",
                             mycontroller: passController,

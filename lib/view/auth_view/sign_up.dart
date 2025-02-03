@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 
 import '../../common_widget/custom_textField.dart';
 import '../../common_widget/primary_button.dart';
+import '../../controller/auth_controller.dart';
 import '../../theme.dart';
 import 'log_in.dart';
 
@@ -17,7 +18,9 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
+  List<String> accountType = ["Customer", "Designer"];
   bool isSecure = false;
+  final authController = Get.put(AuthController());
   GlobalKey<FormState> formState = GlobalKey<FormState>();
   TextEditingController fnameController = TextEditingController();
   TextEditingController lnameController = TextEditingController();
@@ -27,6 +30,7 @@ class _SignUpState extends State<SignUp> {
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
+    var width = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: TColor.background,
       body: SafeArea(
@@ -150,6 +154,62 @@ class _SignUpState extends State<SignUp> {
                                 return "Can't be empty";
                               }
                             },
+                          ),
+                          SizedBox(height: 20),
+                          Text(
+                            "Account Type",
+                            style: TextStyle(
+                                color: TColor.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500),
+                          ),
+                          SizedBox(height: 10),
+                          Container(
+                            decoration: BoxDecoration(
+                                color: TColor.white,
+                                borderRadius: BorderRadius.circular(25)),
+                            width: width / 0.5,
+                            child: DropdownButton<String>(
+                              hint: Obx(() => authController
+                                      .accountType.value.isEmpty
+                                  ? Text(
+                                      " Choose your Account Type",
+                                      style: TextStyle(
+                                          color: TColor.black.withOpacity(0.5)),
+                                    )
+                                  : Text(authController.accountType.value,
+                                      style: TextStyle(color: TColor.black))),
+                              items: accountType.map((String service) {
+                                return DropdownMenuItem<String>(
+                                  value: service,
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        service,
+                                        style: TextStyle(
+                                            color:
+                                                TColor.black.withOpacity(0.5)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                              iconSize: 30,
+                              icon: Icon(Icons.keyboard_arrow_down),
+                              isExpanded: true,
+                              padding: EdgeInsets.symmetric(horizontal: 12),
+                              underline: Text(
+                                "",
+                                style: TextStyle(color: TColor.white),
+                              ),
+                              onChanged: (String? val) {
+                                if (val != null) {
+                                  authController.accountType.value = val;
+
+                                  print(authController.accountType.value);
+                                }
+                              },
+                            ),
                           ),
                         ],
                       ),
