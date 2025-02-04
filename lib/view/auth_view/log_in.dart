@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import '../../common_widget/custom_textField.dart';
 import '../../theme.dart';
 import '../customer_side/customer_home_page.dart';
+import '../deigner_side/designer_home_page.dart';
 import 'sign_up.dart';
 
 class LogIn extends StatefulWidget {
