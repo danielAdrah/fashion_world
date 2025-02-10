@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "396109105186",
+    "project_id": "fashionuniverse",
+    "storage_bucket": "fashionuniverse.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:396109105186:android:74bd43e04783062cdc227b",
+        "android_client_info": {
+          "package_name": "com.example.fashion_world"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKta9FdLE1VclPKP-dxXAOFj1Md7BLbfw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

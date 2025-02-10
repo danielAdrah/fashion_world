@@ -1,11 +1,17 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'view/auth_view/sign_up.dart';
+import 'firebase_options.dart';
+import 'view/auth_view/auth_gate.dart';
 import 'view/customer_side/customer_profile_view.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -16,7 +22,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SignUp(),
+      home: AuthGate(),
       routes: {
         "profile": (context) => CustomerProfileView(),
         

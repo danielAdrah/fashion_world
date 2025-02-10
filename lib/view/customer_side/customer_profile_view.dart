@@ -1,11 +1,13 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, must_be_immutable
 
 import 'package:animate_do/animate_do.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../common_widget/custom_appBar.dart';
 import '../../theme.dart';
+import '../auth_view/log_in.dart';
 import 'update_personal_info.dart';
 
 class CustomerProfileView extends StatefulWidget {
@@ -114,7 +116,10 @@ class _CustomerProfileViewState extends State<CustomerProfileView> {
                           Divider(color: TColor.white, endIndent: 180),
                           SizedBox(height: 30),
                           InfoTile2(
-                            onTap: () {},
+                            onTap: () async{
+                              await FirebaseAuth.instance.signOut();
+                              Get.off(LogIn());
+                            },
                             name: "Log Out",
                             value: "",
                             icon: Icons.logout,
