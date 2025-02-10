@@ -88,6 +88,12 @@ class _CustomerProfileViewState extends State<CustomerProfileView> {
                             name: "E-mail:",
                             value: "www.dado@gmail.com",
                           ),
+                          SizedBox(height: 20),
+                          InfoTile(
+                            onTap: () {},
+                            name: "Phine Number:",
+                            value: "2154184",
+                          ),
                           SizedBox(height: 40),
                         ],
                       ),
@@ -114,15 +120,6 @@ class _CustomerProfileViewState extends State<CustomerProfileView> {
                             icon: Icons.logout,
                           ),
                           SizedBox(height: 20),
-                          InfoTile2(
-                            onTap: () {},
-                            name: "Delete Account",
-                            value: "",
-                            icon: Icons.delete,
-                          ),
-                          // SizedBox(height: 12),
-                          // Divider(
-                          //     color: TColor.white, endIndent: 25, indent: 25),
                         ],
                       ),
                     ),

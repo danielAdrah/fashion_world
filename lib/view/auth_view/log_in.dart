@@ -137,7 +137,7 @@ class _LogInState extends State<LogIn> {
                     title: "Log In",
                     //this method to perform the login operation
                     onTap: () async {
-                      Get.off(CustomerHomePage());
+                      // Get.off(CustomerHomePage());
                       if (formState.currentState!.validate()) {
                         //here we checked if the textfields have a value
                         //if it does it will excute this block

@@ -7,6 +7,13 @@ import 'package:get/get.dart';
 
 import '../../common_widget/custom_textField.dart';
 import '../../theme.dart';
+import '../customer_side/customer_profile_view.dart';
+import 'designer_news_view.dart';
+import 'desingerNotification_view.dart';
+import 'display_design_comments_view.dart';
+import 'orders_view.dart';
+import 'publish_design_view.dart';
+import 'publish_news.dart';
 
 class DesignerHomePage extends StatefulWidget {
   const DesignerHomePage({super.key});
@@ -58,39 +65,46 @@ class _DesignerHomePageState extends State<DesignerHomePage> {
                   child: SearchAndProfile(
                     searchCont: searchCont,
                     profileonTap: () {
-                      // Get.to(CustomerProfileView());
+                      Get.to(CustomerProfileView());
                     },
                     newsonPressed: () {
-                      // Get.to(CustomerNewsView());
+                      Get.to(DesignerNewsView());
                     },
                     notionPressed: () {
-                      // Get.to(CustomerNotificationView());
+                      Get.to(DesingernotificationView());
                     },
                   ),
                 ),
-                Row(
-                  children: [
-                    TextButton(
-                      child: Text(
-                        "Publish a new design",
-                        style: TextStyle(color: TColor.white),
+                FadeInDown(
+                  delay: Duration(milliseconds: 600),
+                  child: Row(
+                    children: [
+                      TextButton(
+                        child: Text(
+                          "Publish a new design",
+                          style: TextStyle(color: TColor.white),
+                        ),
+                        onPressed: () {
+                          Get.to(PublishDesignView());
+                        },
                       ),
-                      onPressed: () {},
-                    ),
-                    TextButton(
-                      child: Text(
-                        "Publish a new post",
-                        style: TextStyle(color: TColor.white),
+                      TextButton(
+                        child: Text(
+                          "My Orders",
+                          style: TextStyle(color: TColor.white),
+                        ),
+                        onPressed: () {
+                          Get.to(OrdersView());
+                        },
                       ),
-                      onPressed: () {},
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: FadeInDown(
-                    delay: Duration(milliseconds: 600),
+                    delay: Duration(milliseconds: 700),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -112,7 +126,9 @@ class _DesignerHomePageState extends State<DesignerHomePage> {
                             itemCount: designImage.length,
                             itemBuilder: (context, index) {
                               return InkWell(
-                                onTap: () {},
+                                onTap: () {
+                                  Get.to(DisplayDesignCommentsView());
+                                },
                                 child: DesignTile(
                                   img: designImage[index],
                                   title: designTitles[index],

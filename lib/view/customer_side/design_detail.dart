@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import '../../common_widget/custom_appBar.dart';
 import '../../common_widget/design_info_tile.dart';
 import '../../theme.dart';
+import 'customer_payment_view.dart';
 import 'design_comment_view.dart';
 
 class DesginDetail extends StatefulWidget {
@@ -42,7 +43,7 @@ class _DesginDetailState extends State<DesginDetail> {
                 ),
                 SizedBox(height: 35),
                 CircleAvatar(
-                  backgroundImage: AssetImage("assets/img/handbage.png"),
+                  backgroundImage: AssetImage("assets/img/hoody.png"),
                   radius: 90,
                 ),
                 SizedBox(height: 60),
@@ -119,7 +120,11 @@ class _DesginDetailState extends State<DesginDetail> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    PrimaryButton(title: "Order", onTap: () {}),
+                    PrimaryButton(
+                        title: "Order",
+                        onTap: () {
+                          Get.to(CustomerPaymentView());
+                        }),
                     PrimaryButton(
                         title: "Cancel",
                         onTap: () {

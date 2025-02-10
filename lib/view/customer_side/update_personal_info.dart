@@ -16,7 +16,7 @@ class UpdatePersonalInfo extends StatefulWidget {
 }
 
 class _UpdatePersonalInfoState extends State<UpdatePersonalInfo> {
-  TextEditingController mailController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
   TextEditingController nameController = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -71,7 +71,7 @@ class _UpdatePersonalInfoState extends State<UpdatePersonalInfo> {
                       ),
                       SizedBox(height: 20),
                       Text(
-                        "E-mail",
+                        "Phone Number",
                         style: TextStyle(
                             color: TColor.white,
                             fontSize: 15,
@@ -80,8 +80,8 @@ class _UpdatePersonalInfoState extends State<UpdatePersonalInfo> {
                       SizedBox(height: 10),
                       CustomTextForm(
                         secure: false,
-                        hinttext: "Mail",
-                        mycontroller: mailController,
+                        hinttext: "Phone",
+                        mycontroller: phoneController,
                       ),
                     ],
                   ),

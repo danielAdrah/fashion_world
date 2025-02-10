@@ -8,6 +8,8 @@ import '../../common_widget/custom_textField.dart';
 import '../../common_widget/primary_button.dart';
 import '../../controller/auth_controller.dart';
 import '../../theme.dart';
+import '../customer_side/customer_home_page.dart';
+import '../deigner_side/designer_home_page.dart';
 import 'log_in.dart';
 
 class SignUp extends StatefulWidget {
@@ -25,6 +27,7 @@ class _SignUpState extends State<SignUp> {
   TextEditingController fnameController = TextEditingController();
   TextEditingController lnameController = TextEditingController();
   TextEditingController mailController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
   TextEditingController passController = TextEditingController();
 
   @override
@@ -129,6 +132,26 @@ class _SignUpState extends State<SignUp> {
                           ),
                           SizedBox(height: 20),
                           Text(
+                            "Phone Number",
+                            style: TextStyle(
+                                color: TColor.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500),
+                          ),
+                          SizedBox(height: 10),
+                          CustomTextForm(
+                            prefixIcon: Icon(Icons.phone_iphone_rounded),
+                            secure: false,
+                            hinttext: "Enter your number",
+                            mycontroller: phoneController,
+                            validator: (val) {
+                              if (val == "") {
+                                return "Can't be empty";
+                              }
+                            },
+                          ),
+                          SizedBox(height: 20),
+                          Text(
                             "Password",
                             style: TextStyle(
                                 color: TColor.white,
@@ -222,9 +245,13 @@ class _SignUpState extends State<SignUp> {
                   child: PrimaryButton(
                     title: "Sign Up",
                     onTap: () {
-                      Get.to(LogIn());
+                      if (authController.accountType.value == 'Customer') {
+                        Get.off(CustomerHomePage());
+                      } else if (authController.accountType.value ==
+                          'Designer') {
+                        Get.off(DesignerHomePage());
+                      }
                       if (formState.currentState!.validate()) {
-                        print("yess");
                       } else {
                         print("noooo");
                       }
