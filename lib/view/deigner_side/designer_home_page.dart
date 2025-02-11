@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../common_widget/custom_textField.dart';
+import '../../controller/store_controller.dart';
 import '../../theme.dart';
 import '../customer_side/customer_profile_view.dart';
 import 'designer_news_view.dart';
@@ -48,6 +49,13 @@ class _DesignerHomePageState extends State<DesignerHomePage> {
     "assets/img/pyjama.png",
   ];
   final searchCont = TextEditingController();
+  final storeController = Get.put(StoreController());
+  @override
+  void initState() {
+    storeController.fetchDesinges();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
@@ -56,93 +64,104 @@ class _DesignerHomePageState extends State<DesignerHomePage> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Center(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 30),
-                FadeInDown(
-                  delay: Duration(milliseconds: 500),
-                  child: SearchAndProfile(
-                    searchCont: searchCont,
-                    profileonTap: () {
-                      Get.to(CustomerProfileView());
-                    },
-                    newsonPressed: () {
-                      Get.to(DesignerNewsView());
-                    },
-                    notionPressed: () {
-                      Get.to(DesingernotificationView());
-                    },
+            child: Obx(
+              () => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 30),
+                  FadeInDown(
+                    delay: Duration(milliseconds: 500),
+                    child: SearchAndProfile(
+                      searchCont: searchCont,
+                      profileonTap: () {
+                        Get.to(CustomerProfileView());
+                      },
+                      newsonPressed: () {
+                        Get.to(DesignerNewsView());
+                      },
+                      notionPressed: () {
+                        Get.to(DesingernotificationView());
+                      },
+                    ),
                   ),
-                ),
-                FadeInDown(
-                  delay: Duration(milliseconds: 600),
-                  child: Row(
-                    children: [
-                      TextButton(
-                        child: Text(
-                          "Publish a new design",
-                          style: TextStyle(color: TColor.white),
-                        ),
-                        onPressed: () {
-                          Get.to(PublishDesignView());
-                        },
-                      ),
-                      TextButton(
-                        child: Text(
-                          "My Orders",
-                          style: TextStyle(color: TColor.white),
-                        ),
-                        onPressed: () {
-                          Get.to(OrdersView());
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: FadeInDown(
-                    delay: Duration(milliseconds: 700),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  FadeInDown(
+                    delay: Duration(milliseconds: 600),
+                    child: Row(
                       children: [
-                        Text(
-                          "Explore New Designs!",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: TColor.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                        TextButton(
+                          child: Text(
+                            "Publish a new design",
+                            style: TextStyle(color: TColor.white),
                           ),
+                          onPressed: () {
+                            Get.to(PublishDesignView());
+                          },
                         ),
-                        SizedBox(height: 20),
-                        SizedBox(
-                          height: height,
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemCount: designImage.length,
-                            itemBuilder: (context, index) {
-                              return InkWell(
-                                onTap: () {
-                                  Get.to(DisplayDesignCommentsView());
-                                },
-                                child: DesignTile(
-                                  img: designImage[index],
-                                  title: designTitles[index],
-                                ),
-                              );
-                            },
+                        TextButton(
+                          child: Text(
+                            "My Orders",
+                            style: TextStyle(color: TColor.white),
                           ),
+                          onPressed: () {
+                            Get.to(OrdersView());
+                          },
                         ),
-                        SizedBox(height: 20),
                       ],
                     ),
                   ),
-                ),
-              ],
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: FadeInDown(
+                      delay: Duration(milliseconds: 700),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Explore New Designs!",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: TColor.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          SizedBox(height: 20),
+                          storeController.allDesignes.isEmpty
+                              ? Center(
+                                  child: Text("There are no designes yet!",
+                                      style: TextStyle(
+                                          color: TColor.white,
+                                          fontWeight: FontWeight.bold)))
+                              : SizedBox(
+                                  height: height,
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    itemCount:
+                                        storeController.allDesignes.length,
+                                    itemBuilder: (context, index) {
+                                      var design =
+                                          storeController.allDesignes[index];
+                                      return InkWell(
+                                        onTap: () {
+                                          Get.to(DisplayDesignCommentsView());
+                                        },
+                                        child: DesignTile(
+                                          img: "assets/img/hoody.png",
+                                          title: design['title'],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                          SizedBox(height: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

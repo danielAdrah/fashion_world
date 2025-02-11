@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, must_be_immutable
 
 import 'package:animate_do/animate_do.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -18,6 +19,32 @@ class CustomerProfileView extends StatefulWidget {
 }
 
 class _CustomerProfileViewState extends State<CustomerProfileView> {
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  String? userName;
+  String? userEmail;
+  String? userPhonenumber;
+
+  Future<void> fetchUserData() async {
+    final user = auth.currentUser;
+    if (user != null) {
+      final docSnap = await firestore.collection('users').doc(user.uid).get();
+      if (docSnap.exists) {
+        setState(() {
+          userName = docSnap.get('name');
+          userEmail = docSnap.get('email');
+          userPhonenumber = docSnap.get('phoneNumber');
+        });
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    fetchUserData();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,7 +90,10 @@ class _CustomerProfileViewState extends State<CustomerProfileView> {
                             ),
                           ),
                           TextButton(
-                            child: Text("Change"),
+                            child: Text(
+                              "Change",
+                              style: TextStyle(color: TColor.white),
+                            ),
                             onPressed: () {
                               Get.to(UpdatePersonalInfo());
                             },
@@ -82,19 +112,19 @@ class _CustomerProfileViewState extends State<CustomerProfileView> {
                           InfoTile(
                             onTap: () {},
                             name: "Full Name:",
-                            value: "Daniel Adrah",
+                            value: userName ?? "wait ...",
                           ),
                           SizedBox(height: 20),
                           InfoTile(
                             onTap: () {},
                             name: "E-mail:",
-                            value: "www.dado@gmail.com",
+                            value: userEmail ?? "wait ...",
                           ),
                           SizedBox(height: 20),
                           InfoTile(
                             onTap: () {},
                             name: "Phine Number:",
-                            value: "2154184",
+                            value: userPhonenumber ?? "wait ...",
                           ),
                           SizedBox(height: 40),
                         ],
@@ -116,7 +146,7 @@ class _CustomerProfileViewState extends State<CustomerProfileView> {
                           Divider(color: TColor.white, endIndent: 180),
                           SizedBox(height: 30),
                           InfoTile2(
-                            onTap: () async{
+                            onTap: () async {
                               await FirebaseAuth.instance.signOut();
                               Get.off(LogIn());
                             },
@@ -173,8 +203,8 @@ class InfoTile extends StatelessWidget {
               value,
               style: TextStyle(
                 color: TColor.white,
-                fontWeight: FontWeight.w600,
-                fontSize: 20,
+                fontWeight: FontWeight.w400,
+                fontSize: 17,
               ),
             ),
           ),

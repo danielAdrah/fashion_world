@@ -1,8 +1,10 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../common_widget/custom_appBar.dart';
 import '../../common_widget/custom_textField.dart';
+import '../../controller/store_controller.dart';
 import '../../theme.dart';
 
 class DesignerNewsView extends StatefulWidget {
@@ -13,6 +15,7 @@ class DesignerNewsView extends StatefulWidget {
 }
 
 class _DesignerNewsViewState extends State<DesignerNewsView> {
+  final storeController = Get.put(StoreController());
   final postTextController = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -37,7 +40,10 @@ class _DesignerNewsViewState extends State<DesignerNewsView> {
                           secure: false),
                     ),
                     IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          storeController.addNews(postTextController.text);
+                          postTextController.clear();
+                        },
                         icon: Icon(
                           Icons.arrow_circle_up_rounded,
                           color: TColor.primary,
@@ -49,17 +55,39 @@ class _DesignerNewsViewState extends State<DesignerNewsView> {
               SizedBox(height: 25),
               SizedBox(
                 width: double.infinity,
-                child: ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: 3,
-                    itemBuilder: (context, index) {
-                      return PostTile(
-                        name: "Daniel Adrah",
-                        content:
-                            "hello my friends how are you hope yoy are doing good, how is life with you? what about the weather is it cold , hot or very hot in the golf",
-                        img: "assets/img/hoody.png",
-                      );
+                child: StreamBuilder(
+                    stream: storeController.fetchNews(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return Text(snapshot.error.toString());
+                      }
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(
+                            child: CircularProgressIndicator(
+                                color: TColor.primary));
+                      }
+                      if (!snapshot.hasData) {
+                        return Center(
+                          child: Text(
+                            "There are no news yet",
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        );
+                      }
+                      return ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: snapshot.data!.length,
+                          itemBuilder: (context, index) {
+                            var news = snapshot.data![index];
+                            return PostTile(
+                              name: news['user'],
+                              content: news['content'],
+                              img: "assets/img/hoody.png",
+                            );
+                          });
                     }),
               ),
             ],

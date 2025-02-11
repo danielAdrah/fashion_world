@@ -25,7 +25,6 @@ class MyApp extends StatelessWidget {
       home: AuthGate(),
       routes: {
         "profile": (context) => CustomerProfileView(),
-        
       },
     );
   }
