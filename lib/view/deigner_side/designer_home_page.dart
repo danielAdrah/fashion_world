@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, body_might_complete_normally_nullable, avoid_print, unused_local_variable, use_build_context_synchronously, unnecessary_null_comparison, unnecessary_null_in_if_null_operators, unused_import, must_be_immutable
 
 import 'package:animate_do/animate_do.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fashion_world/common_widget/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -9,6 +10,8 @@ import '../../common_widget/custom_textField.dart';
 import '../../controller/store_controller.dart';
 import '../../theme.dart';
 import '../customer_side/customer_profile_view.dart';
+import '../customer_side/design_detail.dart';
+import 'designer_design_detail.dart';
 import 'designer_news_view.dart';
 import 'desingerNotification_view.dart';
 import 'display_design_comments_view.dart';
@@ -24,36 +27,19 @@ class DesignerHomePage extends StatefulWidget {
 }
 
 class _DesignerHomePageState extends State<DesignerHomePage> {
-  List<String> designTitles = [
-    "Classic Dress",
-    "Hoody",
-    "Blouse",
-    "Skirt",
-    "Trousers",
-    "Shirt",
-    "T-shirt",
-    "Suit",
-    "Handbag",
-    "Pyjamas",
-  ];
-  List<String> designImage = [
-    "assets/img/dress.png",
-    "assets/img/hoody.png",
-    "assets/img/blouse.png",
-    "assets/img/skirt.png",
-    "assets/img/trousers.png",
-    "assets/img/shirt.png",
-    "assets/img/shirt.png",
-    "assets/img/suit.png",
-    "assets/img/handbage.png",
-    "assets/img/pyjama.png",
-  ];
+  bool isDesignSearched = false;
   final searchCont = TextEditingController();
   final storeController = Get.put(StoreController());
   @override
   void initState() {
     storeController.fetchDesinges();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    searchCont.dispose();
+    super.dispose();
   }
 
   @override
@@ -64,104 +50,170 @@ class _DesignerHomePageState extends State<DesignerHomePage> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Center(
-            child: Obx(
-              () => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 30),
-                  FadeInDown(
-                    delay: Duration(milliseconds: 500),
-                    child: SearchAndProfile(
-                      searchCont: searchCont,
-                      profileonTap: () {
-                        Get.to(CustomerProfileView());
-                      },
-                      newsonPressed: () {
-                        Get.to(DesignerNewsView());
-                      },
-                      notionPressed: () {
-                        Get.to(DesingernotificationView());
-                      },
-                    ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 30),
+                FadeInDown(
+                  delay: Duration(milliseconds: 500),
+                  child: SearchAndProfile(
+                    searchCont: searchCont,
+                    profileonTap: () {
+                      Get.to(CustomerProfileView());
+                    },
+                    newsonPressed: () {
+                      Get.to(DesignerNewsView());
+                    },
+                    notionPressed: () {
+                      Get.to(DesingernotificationView());
+                    },
+                    onChanged: (value) {
+                      if (value.isNotEmpty) {
+                        setState(() {
+                          isDesignSearched = true; // Reset search state
+                        });
+                      } else {
+                        setState(() {
+                          isDesignSearched = false; // Reset search state
+                        });
+                      }
+                    },
                   ),
-                  FadeInDown(
-                    delay: Duration(milliseconds: 600),
-                    child: Row(
+                ),
+                FadeInDown(
+                  delay: Duration(milliseconds: 600),
+                  child: Row(
+                    children: [
+                      TextButton(
+                        child: Text(
+                          "Publish a new design",
+                          style: TextStyle(color: TColor.white),
+                        ),
+                        onPressed: () {
+                          Get.to(PublishDesignView());
+                        },
+                      ),
+                      TextButton(
+                        child: Text(
+                          "My Orders",
+                          style: TextStyle(color: TColor.white),
+                        ),
+                        onPressed: () {
+                          Get.to(OrdersView());
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: FadeInDown(
+                    delay: Duration(milliseconds: 700),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextButton(
-                          child: Text(
-                            "Publish a new design",
-                            style: TextStyle(color: TColor.white),
+                        Text(
+                          "Explore New Designs!",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: TColor.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
                           ),
-                          onPressed: () {
-                            Get.to(PublishDesignView());
-                          },
                         ),
-                        TextButton(
-                          child: Text(
-                            "My Orders",
-                            style: TextStyle(color: TColor.white),
-                          ),
-                          onPressed: () {
-                            Get.to(OrdersView());
-                          },
-                        ),
+                        SizedBox(height: 20),
+                        SizedBox(
+                            height: height,
+                            child: StreamBuilder(
+                              stream: FirebaseFirestore.instance
+                                  .collection("designes")
+                                  .snapshots(),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasError) {
+                                  return Text(snapshot.error.toString());
+                                }
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return Center(
+                                      child: CircularProgressIndicator(
+                                          color: TColor.primary));
+                                }
+                                if (snapshot.hasData || snapshot.data != null) {
+                                  List snap = snapshot.data!.docs;
+                                  if (isDesignSearched) {
+                                    snap.removeWhere((e) {
+                                      return !e
+                                          .data()["title"]
+                                          .toString()
+                                          .toLowerCase()
+                                          .startsWith(searchCont.text);
+                                    });
+                                    return ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: NeverScrollableScrollPhysics(),
+                                      itemCount: snap.length,
+                                      itemBuilder: (context, index) {
+                                        var design = snap[index];
+                                        return InkWell(
+                                          onTap: () {
+                                            Get.to(DesignerDesignDetail(
+                                              designID: design.id,
+                                              designerID: design['desingerID'],
+                                              designColor: design['color'],
+                                              designFabric: design['fabric'],
+                                              designPrice: design['price'],
+                                              designSize: design['size'],
+                                              designName: design['title'],
+                                            ));
+                                          },
+                                          child: DesignTile(
+                                            img: "assets/img/hoody.png",
+                                            title: design['title'],
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  } else {
+                                    return ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: NeverScrollableScrollPhysics(),
+                                      itemCount: snap.length,
+                                      itemBuilder: (context, index) {
+                                        var design = snap[index];
+                                        return InkWell(
+                                          onTap: () {
+                                            // Get.to(DisplayDesignCommentsView());
+                                            Get.to(DesignerDesignDetail(
+                                              designID: design.id,
+                                              designerID: design['desingerID'],
+                                              designColor: design['color'],
+                                              designFabric: design['fabric'],
+                                              designPrice: design['price'],
+                                              designSize: design['size'],
+                                              designName: design['title'],
+                                            ));
+                                          },
+                                          child: DesignTile(
+                                            img: "assets/img/hoody.png",
+                                            title: design['title'],
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  }
+                                }
+
+                                return Text("There are no designes yet!",
+                                    style: TextStyle(color: TColor.white));
+                              },
+                            )),
+                        SizedBox(height: 20),
                       ],
                     ),
                   ),
-                  SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: FadeInDown(
-                      delay: Duration(milliseconds: 700),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Explore New Designs!",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: TColor.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          SizedBox(height: 20),
-                          storeController.allDesignes.isEmpty
-                              ? Center(
-                                  child: Text("There are no designes yet!",
-                                      style: TextStyle(
-                                          color: TColor.white,
-                                          fontWeight: FontWeight.bold)))
-                              : SizedBox(
-                                  height: height,
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: NeverScrollableScrollPhysics(),
-                                    itemCount:
-                                        storeController.allDesignes.length,
-                                    itemBuilder: (context, index) {
-                                      var design =
-                                          storeController.allDesignes[index];
-                                      return InkWell(
-                                        onTap: () {
-                                          Get.to(DisplayDesignCommentsView());
-                                        },
-                                        child: DesignTile(
-                                          img: "assets/img/hoody.png",
-                                          title: design['title'],
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                          SizedBox(height: 20),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -215,12 +267,14 @@ class SearchAndProfile extends StatelessWidget {
     required this.profileonTap,
     required this.newsonPressed,
     required this.notionPressed,
+    this.onChanged,
   });
 
   final TextEditingController searchCont;
   void Function()? profileonTap;
   void Function()? newsonPressed;
   void Function()? notionPressed;
+  void Function(String)? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -243,6 +297,7 @@ class SearchAndProfile extends StatelessWidget {
           child: CustomTextForm(
             hinttext: "",
             mycontroller: searchCont,
+            onChanged: onChanged,
             secure: false,
             suffixIcon: Icons.search,
             color: TColor.primary,

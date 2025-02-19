@@ -5,10 +5,12 @@ import 'package:fashion_world/common_widget/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../common_widget/custom_appBar.dart';
+import '../../controller/store_controller.dart';
 import '../../theme.dart';
 
 class DesignCommentView extends StatefulWidget {
-  const DesignCommentView({super.key});
+  const DesignCommentView({super.key, required this.designId});
+  final String designId;
 
   @override
   State<DesignCommentView> createState() => _DesignCommentViewState();
@@ -16,9 +18,9 @@ class DesignCommentView extends StatefulWidget {
 
 class _DesignCommentViewState extends State<DesignCommentView> {
   final commentController = TextEditingController();
+  final storeController = Get.put(StoreController());
   @override
   Widget build(BuildContext context) {
-  
     return Scaffold(
       backgroundColor: TColor.background,
       body: SafeArea(
@@ -56,19 +58,44 @@ class _DesignCommentViewState extends State<DesignCommentView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        // height: height,
-                        width: double.infinity,
-                        child: ListView.builder(
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemCount: 8,
-                            itemBuilder: (context, index) {
-                              return CommentTile(
-                                name: "Ali Ahmad",
-                                content: "So coool",
-                              );
-                            }),
-                      ),
+                          width: double.infinity,
+                          child: StreamBuilder(
+                              stream: storeController
+                                  .fetchComments(widget.designId),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasError) {
+                                  return Text(snapshot.error.toString());
+                                }
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return Center(
+                                      child: CircularProgressIndicator(
+                                          color: TColor.primary));
+                                }
+                                if (!snapshot.hasData) {
+                                  return Center(
+                                    child: Text(
+                                      "There are no news yet",
+                                      style: TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  );
+                                }
+                                return ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    itemCount: snapshot.data!.length,
+                                    itemBuilder: (context, index) {
+                                      var comment = snapshot.data![index];
+                                      return CommentTile(
+                                        name: comment['user'],
+                                        content: comment['content'],
+                                      );
+                                    });
+                              })
+                          //
+                          ),
                       // SizedBox(height: 30),
                     ],
                   ),

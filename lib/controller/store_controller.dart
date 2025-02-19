@@ -7,10 +7,28 @@ import 'package:get/get.dart';
 
 class StoreController extends GetxController {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final FirebaseAuth auth = FirebaseAuth.instance;
   RxList<QueryDocumentSnapshot> allDesignes = <QueryDocumentSnapshot>[].obs;
+  RxList<QueryDocumentSnapshot> designerOrders = <QueryDocumentSnapshot>[].obs;
   //=====
+  RxString userName = ''.obs;
+  RxString userMail = ''.obs;
+  RxString userNumber = ''.obs;
   RxBool addDesignLoading = false.obs;
   //=====
+
+//=====FETCH USER INFO
+  Future<void> fetchUserData() async {
+    final docSnap = await firestore
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get();
+    if (docSnap.exists) {
+      userName.value = docSnap.get('name');
+      userMail.value = docSnap.get('email');
+      userNumber.value = docSnap.get('phoneNumber');
+    }
+  }
 
 //=====ADD A NEW DESIGN
   Future<void> addDesign(
@@ -75,5 +93,109 @@ class StoreController extends GetxController {
         return news;
       }).toList();
     });
+  }
+
+  //=====UPDATE USER INFO
+  updateUserInfo(BuildContext context, String newName, newNumber) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(auth.currentUser!.uid)
+          .update({
+        'name': newName,
+        'phoneNumber': newNumber,
+      });
+      fetchUserData();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Your information has been updated')),
+      );
+      print("done update");
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+//=======CREATE ORDER AND PAYMENT
+  createOrder(
+    String customerName,
+    designName,
+    designerID,
+    cardID,
+    amount,
+  ) async {
+    try {
+      DocumentReference response = await firestore.collection('orders').add({
+        'customerName': customerName,
+        'designName': designName,
+        'designerId': designerID,
+        'customerId': auth.currentUser!.uid,
+      });
+      print("order sent");
+      DocumentReference paymentRef = firestore
+          .collection('orders')
+          .doc(response.id)
+          .collection('payment')
+          .doc();
+      await paymentRef.set({
+        'customerName': customerName,
+        'transactionId': paymentRef.id,
+        'cardId': cardID,
+        'amount': amount,
+        'timestamp': Timestamp.now(),
+      });
+      print("done payment");
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+//========POST A COMMENT
+  sendComment(String designId, content) async {
+    try {
+      DocumentReference response = await firestore
+          .collection('designes')
+          .doc(designId)
+          .collection('comments')
+          .add({
+        'user': FirebaseAuth.instance.currentUser!.email,
+        'content': content,
+        'timestamp': Timestamp.now(),
+      });
+      print("comment sent");
+    } catch (e) {
+      print(e);
+    }
+  }
+
+//========FETCH COMMENTS
+  Stream<List<Map<String, dynamic>>> fetchComments(String designId) {
+    return firestore
+        .collection("designes")
+        .doc(designId)
+        .collection('comments')
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final news = doc.data();
+        return news;
+      }).toList();
+    });
+  }
+
+//=======FETCH ORDERS FOR EACH DESIGNER
+  Future<void> fetchOrder() async {
+    try {
+      
+      QuerySnapshot data = await FirebaseFirestore.instance
+          .collection("orders")
+          .where("designerId",
+              isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+          .get();
+      print('Number of orders fetched: ${data.docs.length}');
+      designerOrders.value = data.docs;
+    } catch (e) {
+      print(e);
+    }
   }
 }

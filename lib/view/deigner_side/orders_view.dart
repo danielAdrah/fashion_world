@@ -3,7 +3,9 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:fashion_world/common_widget/custom_appBar.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
+import '../../controller/store_controller.dart';
 import '../../theme.dart';
 
 class OrdersView extends StatefulWidget {
@@ -14,35 +16,52 @@ class OrdersView extends StatefulWidget {
 }
 
 class _OrdersViewState extends State<OrdersView> {
+  final storeController = Get.put(StoreController());
+  @override
+  void initState() {
+    storeController.fetchOrder();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: TColor.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Column(
-            children: [
-              SizedBox(height: 20),
-              CustomAppBar(),
-              SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: 10,
-                    itemBuilder: (context, index) {
-                      return FadeInDown(
-                        delay: Duration(milliseconds: 600),
-                        child: OrderTile(
-                          orderName: "Order from mohannad",
-                          acceptOnTap: () {},
-                          rejectOnTap: () {},
-                        ),
-                      );
-                    }),
-              ),
-            ],
+          child: Obx(
+            () => Column(
+              children: [
+                SizedBox(height: 20),
+                CustomAppBar(),
+                SizedBox(height: 20),
+                storeController.designerOrders.isEmpty
+                    ? Center(
+                        child: Text(
+                        "You don't have any orders yet",
+                        style: TextStyle(
+                            color: TColor.white, fontWeight: FontWeight.w700),
+                      ))
+                    : SizedBox(
+                        width: double.infinity,
+                        child: ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: storeController.designerOrders.length,
+                            itemBuilder: (context, index) {
+                              var order = storeController.designerOrders[index];
+                              return FadeInDown(
+                                delay: Duration(milliseconds: 600),
+                                child: OrderTile(
+                                  orderName: order['customerName'],
+                                  acceptOnTap: () {},
+                                  rejectOnTap: () {},
+                                ),
+                              );
+                            }),
+                      ),
+              ],
+            ),
           ),
         ),
       ),
@@ -50,6 +69,7 @@ class _OrdersViewState extends State<OrdersView> {
   }
 }
 
+//==========
 class OrderTile extends StatelessWidget {
   const OrderTile({
     super.key,
@@ -80,7 +100,7 @@ class OrderTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                orderName,
+                "You have an order from $orderName",
                 style:
                     TextStyle(color: TColor.white, fontWeight: FontWeight.w600),
               ),

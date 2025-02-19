@@ -1,7 +1,9 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../common_widget/custom_appBar.dart';
+import '../../controller/store_controller.dart';
 import '../../theme.dart';
 
 class CustomerNewsView extends StatefulWidget {
@@ -12,6 +14,7 @@ class CustomerNewsView extends StatefulWidget {
 }
 
 class _CustomerNewsViewState extends State<CustomerNewsView> {
+  final storeController = Get.put(StoreController());
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,17 +41,39 @@ class _CustomerNewsViewState extends State<CustomerNewsView> {
               SizedBox(height: 30),
               SizedBox(
                 width: double.infinity,
-                child: ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: 3,
-                    itemBuilder: (context, index) {
-                      return PostTile(
-                        name: "Daniel Adrah",
-                        content:
-                            "hello my friends how are you hope yoy are doing good, how is life with you? what about the weather is it cold , hot or very hot in the golf",
-                        img: "assets/img/hoody.png",
-                      );
+                child: StreamBuilder(
+                    stream: storeController.fetchNews(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return Text(snapshot.error.toString());
+                      }
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(
+                            child: CircularProgressIndicator(
+                                color: TColor.primary));
+                      }
+                      if (!snapshot.hasData) {
+                        return Center(
+                          child: Text(
+                            "There are no news yet",
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        );
+                      }
+                      return ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: snapshot.data!.length,
+                          itemBuilder: (context, index) {
+                            var news = snapshot.data![index];
+                            return PostTile(
+                              name: news['user'],
+                              content: news['content'],
+                              img: "assets/img/hoody.png",
+                            );
+                          });
                     }),
               ),
             ],

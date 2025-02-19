@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../common_widget/custom_textField.dart';
+import '../../controller/store_controller.dart';
 import '../../theme.dart';
 
 class UpdatePersonalInfo extends StatefulWidget {
@@ -16,8 +17,15 @@ class UpdatePersonalInfo extends StatefulWidget {
 }
 
 class _UpdatePersonalInfoState extends State<UpdatePersonalInfo> {
+  final storeController = Get.put(StoreController());
+
   TextEditingController phoneController = TextEditingController();
   TextEditingController nameController = TextEditingController();
+  clearFields() {
+    nameController.clear();
+    phoneController.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,8 +104,16 @@ class _UpdatePersonalInfoState extends State<UpdatePersonalInfo> {
                     ProfileBtn(
                         title: "Apply Changes",
                         onTap: () {
-                          // Get.off(CustomerProfileView());
-                          Navigator.of(context).pushReplacementNamed('profile');
+                          if (nameController.text.isNotEmpty &&
+                              phoneController.text.isNotEmpty) {
+                            storeController.updateUserInfo(context,
+                                nameController.text, phoneController.text);
+                            clearFields();
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Fields can't be empty")),
+                            );
+                          }
                         }),
                     ProfileBtn(
                         title: "Cancel",

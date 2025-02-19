@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../common_widget/custom_appBar.dart';
+import '../../controller/store_controller.dart';
 import '../../theme.dart';
 import '../auth_view/log_in.dart';
 import 'update_personal_info.dart';
@@ -21,27 +22,11 @@ class CustomerProfileView extends StatefulWidget {
 class _CustomerProfileViewState extends State<CustomerProfileView> {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  String? userName;
-  String? userEmail;
-  String? userPhonenumber;
-
-  Future<void> fetchUserData() async {
-    final user = auth.currentUser;
-    if (user != null) {
-      final docSnap = await firestore.collection('users').doc(user.uid).get();
-      if (docSnap.exists) {
-        setState(() {
-          userName = docSnap.get('name');
-          userEmail = docSnap.get('email');
-          userPhonenumber = docSnap.get('phoneNumber');
-        });
-      }
-    }
-  }
+  final storeController = Get.put(StoreController());
 
   @override
   void initState() {
-    fetchUserData();
+    storeController.fetchUserData();
     super.initState();
   }
 
@@ -51,117 +36,119 @@ class _CustomerProfileViewState extends State<CustomerProfileView> {
       backgroundColor: TColor.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 20),
-              CustomAppBar(),
-              SizedBox(height: 40),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    FadeInDown(
-                      delay: Duration(milliseconds: 600),
-                      child: CircleAvatar(
-                        backgroundColor:
-                            const Color.fromARGB(255, 212, 210, 210),
-                        radius: 70,
-                        child: Icon(
-                          Icons.person_2_outlined,
-                          size: 55,
+          child: Obx(
+            () => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 20),
+                CustomAppBar(),
+                SizedBox(height: 40),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FadeInDown(
+                        delay: Duration(milliseconds: 600),
+                        child: CircleAvatar(
+                          backgroundColor:
+                              const Color.fromARGB(255, 212, 210, 210),
+                          radius: 70,
+                          child: Icon(
+                            Icons.person_2_outlined,
+                            size: 55,
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: 30),
-                    FadeInDown(
-                      delay: Duration(milliseconds: 700),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Personal Information :",
-                            style: TextStyle(
-                              color: TColor.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                          TextButton(
-                            child: Text(
-                              "Change",
-                              style: TextStyle(color: TColor.white),
-                            ),
-                            onPressed: () {
-                              Get.to(UpdatePersonalInfo());
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    FadeInDown(
+                      SizedBox(height: 30),
+                      FadeInDown(
                         delay: Duration(milliseconds: 700),
-                        child: Divider(color: TColor.white, endIndent: 110)),
-                    SizedBox(height: 20),
-                    FadeInDown(
-                      delay: Duration(milliseconds: 800),
-                      child: Column(
-                        children: [
-                          InfoTile(
-                            onTap: () {},
-                            name: "Full Name:",
-                            value: userName ?? "wait ...",
-                          ),
-                          SizedBox(height: 20),
-                          InfoTile(
-                            onTap: () {},
-                            name: "E-mail:",
-                            value: userEmail ?? "wait ...",
-                          ),
-                          SizedBox(height: 20),
-                          InfoTile(
-                            onTap: () {},
-                            name: "Phine Number:",
-                            value: userPhonenumber ?? "wait ...",
-                          ),
-                          SizedBox(height: 40),
-                        ],
-                      ),
-                    ),
-                    FadeInDown(
-                      delay: Duration(milliseconds: 900),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Other Options :",
-                            style: TextStyle(
-                              color: TColor.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Personal Information :",
+                              style: TextStyle(
+                                color: TColor.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
                             ),
-                          ),
-                          Divider(color: TColor.white, endIndent: 180),
-                          SizedBox(height: 30),
-                          InfoTile2(
-                            onTap: () async {
-                              await FirebaseAuth.instance.signOut();
-                              Get.off(LogIn());
-                            },
-                            name: "Log Out",
-                            value: "",
-                            icon: Icons.logout,
-                          ),
-                          SizedBox(height: 20),
-                        ],
+                            TextButton(
+                              child: Text(
+                                "Change",
+                                style: TextStyle(color: TColor.white),
+                              ),
+                              onPressed: () {
+                                Get.to(UpdatePersonalInfo());
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                      FadeInDown(
+                          delay: Duration(milliseconds: 700),
+                          child: Divider(color: TColor.white, endIndent: 110)),
+                      SizedBox(height: 20),
+                      FadeInDown(
+                        delay: Duration(milliseconds: 800),
+                        child: Column(
+                          children: [
+                            InfoTile(
+                              onTap: () {},
+                              name: "Name:",
+                              value: storeController.userName.value,
+                            ),
+                            SizedBox(height: 20),
+                            InfoTile(
+                              onTap: () {},
+                              name: "E-mail:",
+                              value: storeController.userMail.value,
+                            ),
+                            SizedBox(height: 20),
+                            InfoTile(
+                              onTap: () {},
+                              name: "Phine Number:",
+                              value: storeController.userNumber.value,
+                            ),
+                            SizedBox(height: 40),
+                          ],
+                        ),
+                      ),
+                      FadeInDown(
+                        delay: Duration(milliseconds: 900),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Other Options :",
+                              style: TextStyle(
+                                color: TColor.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            Divider(color: TColor.white, endIndent: 180),
+                            SizedBox(height: 30),
+                            InfoTile2(
+                              onTap: () async {
+                                await FirebaseAuth.instance.signOut();
+                                Get.off(LogIn());
+                              },
+                              name: "Log Out",
+                              value: "",
+                              icon: Icons.logout,
+                            ),
+                            SizedBox(height: 20),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -8,6 +8,7 @@ class CustomTextForm extends StatelessWidget {
   IconData? suffixIcon;
   Color? color;
   Widget? prefixIcon;
+  void Function(String)? onChanged;
   final bool secure;
   final TextEditingController mycontroller;
   final String? Function(String?)? validator;
@@ -19,6 +20,7 @@ class CustomTextForm extends StatelessWidget {
     this.validator,
     this.suffixIcon,
     this.prefixIcon,
+    this.onChanged,
     this.color,
     required this.secure,
     this.onTap,
@@ -30,9 +32,11 @@ class CustomTextForm extends StatelessWidget {
       controller: mycontroller,
       obscureText: secure,
       validator: validator,
+      onChanged: onChanged,
       style: TextStyle(color: Colors.black),
       decoration: InputDecoration(
         prefixIcon: prefixIcon,
+        
         hintText: hinttext,
         suffixIcon: InkWell(
             onTap: onTap,

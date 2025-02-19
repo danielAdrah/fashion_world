@@ -198,11 +198,14 @@ class _SignUpState extends State<SignUp> {
                                     ? Text(
                                         " Choose your Account Type",
                                         style: TextStyle(
+                                            fontSize: 13,
                                             color:
                                                 TColor.black.withOpacity(0.5)),
                                       )
                                     : Text(authController.accountType.value,
-                                        style: TextStyle(color: TColor.black))),
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            color: TColor.black))),
                                 items: accountType.map((String service) {
                                   return DropdownMenuItem<String>(
                                     value: service,
@@ -211,6 +214,7 @@ class _SignUpState extends State<SignUp> {
                                         Text(
                                           service,
                                           style: TextStyle(
+                                              fontSize: 13,
                                               color: TColor.black
                                                   .withOpacity(0.5)),
                                         ),

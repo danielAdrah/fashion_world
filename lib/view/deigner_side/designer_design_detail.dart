@@ -1,19 +1,16 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unnecessary_string_interpolations, avoid_print
 
 import 'package:animate_do/animate_do.dart';
-import 'package:fashion_world/common_widget/custom_textField.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../common_widget/custom_appBar.dart';
 import '../../common_widget/design_info_tile.dart';
 import '../../controller/store_controller.dart';
 import '../../theme.dart';
-import 'customer_payment_view.dart';
-import 'design_comment_view.dart';
-import 'update_personal_info.dart';
+import '../customer_side/design_comment_view.dart';
 
-class DesginDetail extends StatefulWidget {
-  const DesginDetail(
+class DesignerDesignDetail extends StatefulWidget {
+  const DesignerDesignDetail(
       {super.key,
       required this.designID,
       required this.designerID,
@@ -31,23 +28,11 @@ class DesginDetail extends StatefulWidget {
   final String designName;
 
   @override
-  State<DesginDetail> createState() => _DesginDetailState();
+  State<DesignerDesignDetail> createState() => _DesignerDesignDetailState();
 }
 
-class _DesginDetailState extends State<DesginDetail> {
-  final commentController = TextEditingController();
+class _DesignerDesignDetailState extends State<DesignerDesignDetail> {
   final storeController = Get.put(StoreController());
-  postComment() async {
-    try {
-      storeController.sendComment(widget.designID, commentController.text);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Your comment is sent')),
-      );
-      commentController.clear();
-    } catch (e) {
-      print(e);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,30 +103,6 @@ class _DesginDetailState extends State<DesginDetail> {
                   ),
                 ),
                 SizedBox(height: 30),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: CustomTextForm(
-                          hinttext: "Type a comment",
-                          mycontroller: commentController,
-                          secure: false,
-                        ),
-                      ),
-                      IconButton(
-                          onPressed: () {
-                            //send comment
-                            postComment();
-                          },
-                          icon: Icon(
-                            Icons.arrow_circle_up_rounded,
-                            color: TColor.primary,
-                            size: 40,
-                          ))
-                    ],
-                  ),
-                ),
                 SizedBox(height: 10),
                 InkWell(
                   onTap: () {
@@ -158,35 +119,6 @@ class _DesginDetailState extends State<DesginDetail> {
                   ),
                 ),
                 SizedBox(height: 50),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ProfileBtn(
-                      title: "Order",
-                      onTap: () {
-                        Get.to(CustomerPaymentView(
-                            designerID: widget.designerID,
-                            designName: widget.designName));
-                      },
-                    ),
-                    ProfileBtn(
-                      title: "Cancel",
-                      onTap: () {
-                        Get.back();
-                      },
-                    ),
-                    // PrimaryButton(
-                    //     title: "Order",
-                    //     onTap: () {
-                    //       Get.to(CustomerPaymentView(designerID:widget.designerID,designName: widget.designName));
-                    //     }),
-                    // PrimaryButton(
-                    //     title: "Cancel",
-                    //     onTap: () {
-                    //       Get.back();
-                    //     }),
-                  ],
-                ),
                 SizedBox(height: 30),
               ],
             ),
