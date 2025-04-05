@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
+import 'package:firebase_messaging/firebase_messaging.dart';
 import '../view/auth_view/log_in.dart';
 import '../view/customer_side/customer_home_page.dart';
 import '../view/deigner_side/designer_home_page.dart';
@@ -12,25 +12,32 @@ import '../view/deigner_side/designer_home_page.dart';
 class AuthController extends GetxController {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final firebaseMessaging = FirebaseMessaging.instance;
   RxString accountType = "".obs;
   RxBool logInLoading = false.obs;
   RxBool signUpLoading = false.obs;
+
   //=======
 
 //======THIS METHOD FOR SIGNING UP
   Future signUp(String mail, passWord, accountType, phoneNumber, name,
       BuildContext context) async {
     try {
+      print("=====1");
+      String? deviceToken = await firebaseMessaging.getToken();
+      print("================$deviceToken");
       signUpLoading.value = true;
       final credential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: mail,
         password: passWord,
       );
+      print("=====2");
 
       //after the user creates an account a link is send to it
       FirebaseAuth.instance.currentUser!.sendEmailVerification();
-
+      print("=====3");
+      print("===================before add");
       // await addUserToFirestore(credential.user!, accountType, name);
       firestore.collection("users").doc(credential.user!.uid).set({
         'uid': credential.user!.uid,
@@ -39,6 +46,7 @@ class AuthController extends GetxController {
         'role': accountType,
         'phoneNumber': phoneNumber,
         'createdAt': FieldValue.serverTimestamp(),
+        'token': deviceToken,
       });
       print("done after added");
       Get.to(LogIn());
@@ -71,23 +79,25 @@ class AuthController extends GetxController {
 //=======THIS METHOD IS FOR LOGIN
   Future logIn(String mail, passWord, BuildContext context) async {
     try {
+      print("=====1");
       logInLoading.value = true;
       final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: mail,
         password: passWord,
       );
+      print("=====2");
       logInLoading.value = false;
 
       if (credential.user!.emailVerified) {
         //here we check if the user has verified his account
         //if he so we will take hin to the home page
         //if he is not we will tell him to do it
-
+        print("=====3");
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(credential.user!.uid)
             .get();
-
+        print("=====4");
         if (userDoc.exists) {
           Map<String, dynamic> userData =
               userDoc.data() as Map<String, dynamic>;
@@ -98,7 +108,7 @@ class AuthController extends GetxController {
           } else if (role == "Designer") {
             Get.off(DesignerHomePage());
           } else {
-            print("no role");
+            print("=======================no role");
           }
         }
       } else {
@@ -128,5 +138,4 @@ class AuthController extends GetxController {
       );
     }
   }
-
 }

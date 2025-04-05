@@ -1,11 +1,14 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print
 
 import 'package:animate_do/animate_do.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fashion_world/common_widget/custom_appBar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 import '../../controller/store_controller.dart';
+import '../../services/notification_service.dart';
 import '../../theme.dart';
 
 class OrdersView extends StatefulWidget {
@@ -16,7 +19,33 @@ class OrdersView extends StatefulWidget {
 }
 
 class _OrdersViewState extends State<OrdersView> {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final notiService = NotificationService();
   final storeController = Get.put(StoreController());
+  String? customerToken;
+
+  sendAndStoreNotifications(
+      String body, title, customerId, customerName, token) async {
+    try {
+      notiService.sendNotifications(body, title, token);
+
+      //store the notification
+      await firestore
+          .collection('users')
+          .doc(customerId)
+          .collection('notifications')
+          .add({
+        'title': title,
+        'body': body,
+        'customerName': customerName,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+      print("after adding to thr noti collection");
+    } catch (e) {
+      print("errorrrrrrrrrrrrrrr $e");
+    }
+  }
+
   @override
   void initState() {
     storeController.fetchOrder();
@@ -25,42 +54,107 @@ class _OrdersViewState extends State<OrdersView> {
 
   @override
   Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: TColor.background,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Obx(
-            () => Column(
-              children: [
-                SizedBox(height: 20),
-                CustomAppBar(),
-                SizedBox(height: 20),
-                storeController.designerOrders.isEmpty
-                    ? Center(
-                        child: Text(
-                        "You don't have any orders yet",
-                        style: TextStyle(
-                            color: TColor.white, fontWeight: FontWeight.w700),
-                      ))
-                    : SizedBox(
-                        width: double.infinity,
-                        child: ListView.builder(
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemCount: storeController.designerOrders.length,
-                            itemBuilder: (context, index) {
-                              var order = storeController.designerOrders[index];
-                              return FadeInDown(
-                                delay: Duration(milliseconds: 600),
-                                child: OrderTile(
-                                  orderName: order['customerName'],
-                                  acceptOnTap: () {},
-                                  rejectOnTap: () {},
-                                ),
-                              );
-                            }),
-                      ),
-              ],
+        child: Container(
+          width: double.infinity,
+          height: height,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage(
+                "assets/img/bg.png",
+              ),
+              fit: BoxFit.fill,
+            ),
+          ),
+          child: SingleChildScrollView(
+            child: Obx(
+              () => Column(
+                children: [
+                  SizedBox(height: 20),
+                  CustomAppBar(),
+                  SizedBox(height: 20),
+                  storeController.designerOrders.isEmpty
+                      ? FadeInDown(
+                          delay: Duration(milliseconds: 400),
+                          child: Column(
+                            children: [
+                              SizedBox(height: 60),
+                              Center(
+                                  child: Text(
+                                "You don't have any orders yet",
+                                style: TextStyle(
+                                    color: TColor.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16),
+                              )),
+                              SizedBox(height: 20),
+                              SvgPicture.asset(
+                                'assets/img/notAvailableYet.svg',
+                                width: 200,
+                                height: 200,
+                              ),
+                            ],
+                          ),
+                        )
+                      : SizedBox(
+                          width: double.infinity,
+                          child: ListView.builder(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount: storeController.designerOrders.length,
+                              itemBuilder: (context, index) {
+                                var order =
+                                    storeController.designerOrders[index];
+                                return FadeInDown(
+                                  delay: Duration(milliseconds: 600),
+                                  child: OrderTile(
+                                    orderName: order['customerName'],
+                                    acceptOnTap: () async {
+                                      final docSnap = await firestore
+                                          .collection('users')
+                                          .doc(order['customerId'])
+                                          .get();
+                                      if (docSnap.exists) {
+                                        customerToken = docSnap.get('token');
+                                      }
+                                      print("==============$customerToken");
+
+                                      sendAndStoreNotifications(
+                                        'Your ${order['designName']} Order Is Accepted',
+                                        'Order',
+                                        order['customerId'],
+                                        order['customerName'],
+                                        customerToken,
+                                      );
+                                      storeController.deleteOrder(order.id);
+                                    },
+                                    rejectOnTap: () async {
+                                      final docSnap = await firestore
+                                          .collection('users')
+                                          .doc(order['customerId'])
+                                          .get();
+                                      if (docSnap.exists) {
+                                        customerToken = docSnap.get('token');
+                                      }
+                                      print("==============$customerToken");
+                                      sendAndStoreNotifications(
+                                        'Your ${order['designName']} Order Is Rejected',
+                                        'Order',
+                                        order['customerId'],
+                                        order['customerName'],
+                                        customerToken,
+                                      );
+                                      storeController.deleteOrder(order.id);
+                                    },
+                                  ),
+                                );
+                              }),
+                        ),
+                ],
+              ),
             ),
           ),
         ),
@@ -146,7 +240,10 @@ class OrderButton extends StatelessWidget {
           color: TColor.primary,
           borderRadius: BorderRadius.circular(20),
         ),
-        child: Text(title),
+        child: Text(
+          title,
+          style: TextStyle(color: TColor.white),
+        ),
       ),
     );
   }

@@ -8,8 +8,10 @@ class NotificationTile extends StatelessWidget {
   const NotificationTile({
     super.key,
     required this.title,
+    required this.body,
   });
   final String title;
+  final String body;
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +28,21 @@ class NotificationTile extends StatelessWidget {
                 size: 40,
               ),
               SizedBox(width: 8),
-              Text(title,
-                  style: TextStyle(
-                      color: TColor.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700)),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: TextStyle(
+                          color: TColor.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700)),
+                  Text(body,
+                      style: TextStyle(
+                          color: TColor.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400)),
+                ],
+              ),
             ],
           ),
         ),

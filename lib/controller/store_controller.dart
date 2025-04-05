@@ -10,10 +10,14 @@ class StoreController extends GetxController {
   final FirebaseAuth auth = FirebaseAuth.instance;
   RxList<QueryDocumentSnapshot> allDesignes = <QueryDocumentSnapshot>[].obs;
   RxList<QueryDocumentSnapshot> designerOrders = <QueryDocumentSnapshot>[].obs;
+  RxList<QueryDocumentSnapshot> comments = <QueryDocumentSnapshot>[].obs;
+  RxList<QueryDocumentSnapshot> allNotifications =
+      <QueryDocumentSnapshot>[].obs;
   //=====
   RxString userName = ''.obs;
   RxString userMail = ''.obs;
   RxString userNumber = ''.obs;
+  RxString designerToken = ''.obs;
   RxBool addDesignLoading = false.obs;
   //=====
 
@@ -31,8 +35,8 @@ class StoreController extends GetxController {
   }
 
 //=====ADD A NEW DESIGN
-  Future<void> addDesign(
-      String title, price, fabric, color, size, BuildContext context) async {
+  Future<void> addDesign(String title, price, fabric, color, size, imageUrl, designerName,
+      BuildContext context) async {
     try {
       addDesignLoading.value = true;
       DocumentReference response = await firestore.collection('designes').add({
@@ -41,7 +45,10 @@ class StoreController extends GetxController {
         'fabric': fabric,
         'color': color,
         'size': size,
+        'imageUrl': imageUrl,
+        'status': 'available',
         'desingerID': FirebaseAuth.instance.currentUser!.uid,
+        'desingerName': designerName,
       });
       addDesignLoading.value = false;
       await fetchDesinges();
@@ -67,11 +74,13 @@ class StoreController extends GetxController {
   }
 
 //======POST A NEWS
-  Future<void> addNews(String newsContent) async {
+  Future<void> addNews(String newsContent, newsImage, userName) async {
     try {
       DocumentReference response = await firestore.collection('news').add({
-        'user': FirebaseAuth.instance.currentUser!.email,
+        // 'user': FirebaseAuth.instance.currentUser!.email,
+        'user': userName,
         'content': newsContent,
+        'image': newsImage,
         'timestamp': Timestamp.now(),
       });
       fetchNews();
@@ -183,10 +192,25 @@ class StoreController extends GetxController {
     });
   }
 
+//========
+  Future<void> fetchListComments(String designId) async {
+    try {
+      QuerySnapshot data = await firestore
+          .collection('designes')
+          .doc(designId)
+          .collection('comments')
+          .orderBy('timestamp', descending: true)
+          .get();
+      comments.value = data.docs;
+      print("number of designes are ${comments.length}");
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
 //=======FETCH ORDERS FOR EACH DESIGNER
   Future<void> fetchOrder() async {
     try {
-      
       QuerySnapshot data = await FirebaseFirestore.instance
           .collection("orders")
           .where("designerId",
@@ -194,6 +218,33 @@ class StoreController extends GetxController {
           .get();
       print('Number of orders fetched: ${data.docs.length}');
       designerOrders.value = data.docs;
+    } catch (e) {
+      print(e);
+    }
+  }
+
+//FETCH THE NOTIFICATION FOR EACH USER
+  Future<void> fetchNotification() async {
+    try {
+      QuerySnapshot data = await firestore
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .collection('notifications')
+          .orderBy('timestamp', descending: true)
+          .get();
+      allNotifications.value = data.docs;
+      print("number of designes are ${allNotifications.length}");
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  //======DELETE ORDER
+  deleteOrder(String id) async {
+    try {
+      await firestore.collection('orders').doc(id).delete();
+      print("done delete");
+      fetchOrder();
     } catch (e) {
       print(e);
     }

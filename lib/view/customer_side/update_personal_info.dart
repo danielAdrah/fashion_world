@@ -28,102 +28,116 @@ class _UpdatePersonalInfoState extends State<UpdatePersonalInfo> {
 
   @override
   Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: TColor.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 20),
-              CustomAppBar(),
-              SizedBox(height: 25),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: FadeInDown(
-                  delay: Duration(milliseconds: 600),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          child: Container(
+            width: double.infinity,
+            height: height,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(
+                  "assets/img/bg.png",
+                ),
+                fit: BoxFit.fill,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 20),
+                CustomAppBar(),
+                SizedBox(height: 25),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: FadeInDown(
+                    delay: Duration(milliseconds: 600),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CircleAvatar(
+                          backgroundColor:
+                              const Color.fromARGB(255, 212, 210, 210),
+                          radius: 60,
+                          child: Icon(
+                            Icons.person_2_outlined,
+                            size: 40,
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          "Personal Porfile",
+                          style: TextStyle(
+                            color: TColor.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        SizedBox(height: 30),
+                        Text(
+                          "Full Name",
+                          style: TextStyle(
+                              color: TColor.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500),
+                        ),
+                        SizedBox(height: 10),
+                        CustomTextForm(
+                          secure: false,
+                          hinttext: "Name",
+                          mycontroller: nameController,
+                        ),
+                        SizedBox(height: 20),
+                        Text(
+                          "Phone Number",
+                          style: TextStyle(
+                              color: TColor.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500),
+                        ),
+                        SizedBox(height: 10),
+                        CustomTextForm(
+                          secure: false,
+                          hinttext: "Phone",
+                          mycontroller: phoneController,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 30),
+                FadeInDown(
+                  delay: Duration(milliseconds: 700),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      CircleAvatar(
-                        backgroundColor:
-                            const Color.fromARGB(255, 212, 210, 210),
-                        radius: 60,
-                        child: Icon(
-                          Icons.person_2_outlined,
-                          size: 40,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        "Personal Porfile",
-                        style: TextStyle(
-                          color: TColor.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                      SizedBox(height: 30),
-                      Text(
-                        "Full Name",
-                        style: TextStyle(
-                            color: TColor.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500),
-                      ),
-                      SizedBox(height: 10),
-                      CustomTextForm(
-                        secure: false,
-                        hinttext: "Name",
-                        mycontroller: nameController,
-                      ),
-                      SizedBox(height: 20),
-                      Text(
-                        "Phone Number",
-                        style: TextStyle(
-                            color: TColor.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500),
-                      ),
-                      SizedBox(height: 10),
-                      CustomTextForm(
-                        secure: false,
-                        hinttext: "Phone",
-                        mycontroller: phoneController,
-                      ),
+                      ProfileBtn(
+                          title: "Apply Changes",
+                          onTap: () {
+                            if (nameController.text.isNotEmpty &&
+                                phoneController.text.isNotEmpty) {
+                              storeController.updateUserInfo(context,
+                                  nameController.text, phoneController.text);
+                              clearFields();
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text("Fields can't be empty")),
+                              );
+                            }
+                          }),
+                      ProfileBtn(
+                          title: "Cancel",
+                          onTap: () {
+                            Get.back();
+                          }),
                     ],
                   ),
                 ),
-              ),
-              SizedBox(height: 30),
-              FadeInDown(
-                delay: Duration(milliseconds: 700),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ProfileBtn(
-                        title: "Apply Changes",
-                        onTap: () {
-                          if (nameController.text.isNotEmpty &&
-                              phoneController.text.isNotEmpty) {
-                            storeController.updateUserInfo(context,
-                                nameController.text, phoneController.text);
-                            clearFields();
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Fields can't be empty")),
-                            );
-                          }
-                        }),
-                    ProfileBtn(
-                        title: "Cancel",
-                        onTap: () {
-                          Get.back();
-                        }),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
