@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, must_be_immutable
+// ignore_for_file: deprecated_member_use
 
 import 'package:animate_do/animate_do.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -23,16 +23,42 @@ class _CustomerProfileViewState extends State<CustomerProfileView> {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final storeController = Get.put(StoreController());
+  RxString userRole = ''.obs;
+  Rx<DateTime?> accountCreationDate = Rx<DateTime?>(null);
 
   @override
   void initState() {
     storeController.fetchUserData();
+    fetchAdditionalUserInfo();
     super.initState();
+  }
+
+  Future<void> fetchAdditionalUserInfo() async {
+    try {
+      final docSnap = await firestore
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .get();
+      if (docSnap.exists) {
+        final data = docSnap.data() as Map<String, dynamic>;
+        userRole.value = data['role'] ?? '';
+
+        // Get account creation date from Firebase Auth
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          accountCreationDate.value = user.metadata.creationTime;
+        }
+      }
+    } catch (e) {
+      print("Error fetching additional user info: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
+    var width = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: TColor.background,
       body: SafeArea(
@@ -41,10 +67,12 @@ class _CustomerProfileViewState extends State<CustomerProfileView> {
           height: height,
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage(
-                "assets/img/bg.png",
+              image: const AssetImage("assets/img/bg.png"),
+              fit: BoxFit.cover,
+              colorFilter: ColorFilter.mode(
+                Colors.black.withOpacity(0.2),
+                BlendMode.darken,
               ),
-              fit: BoxFit.fill,
             ),
           ),
           child: SingleChildScrollView(
@@ -52,114 +80,263 @@ class _CustomerProfileViewState extends State<CustomerProfileView> {
               () => Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 20),
-                  CustomAppBar(),
-                  SizedBox(height: 40),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        FadeInDown(
-                          delay: Duration(milliseconds: 600),
-                          child: CircleAvatar(
-                            backgroundColor:
-                                const Color.fromARGB(255, 212, 210, 210),
-                            radius: 70,
-                            child: Icon(
-                              Icons.person_2_outlined,
-                              size: 55,
+                  const SizedBox(height: 20),
+                  const CustomAppBar(),
+                  const SizedBox(height: 30),
+                  // Profile header section
+                  FadeInDown(
+                    delay: const Duration(milliseconds: 300),
+                    child: Container(
+                      width: width * 0.9,
+                      margin: EdgeInsets.symmetric(horizontal: width * 0.05),
+                      padding: const EdgeInsets.all(25),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.2),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withOpacity(0.2),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.3),
+                                width: 2,
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              backgroundColor: TColor.white,
+                              radius: 60,
+                              child: Icon(
+                                Icons.person,
+                                size: 60,
+                                color: TColor.primary,
+                              ),
                             ),
                           ),
+                          const SizedBox(height: 20),
+                          Text(
+                            storeController.userName.value.isEmpty
+                                ? "User"
+                                : storeController.userName.value,
+                            style: TextStyle(
+                              color: TColor.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 24,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            storeController.userMail.value,
+                            style: TextStyle(
+                              color: TColor.white.withOpacity(0.9),
+                              fontSize: 16,
+                            ),
+                          ),
+                          Obx(() => userRole.value.isNotEmpty
+                              ? Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 15, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: TColor.primary.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: TColor.primary.withOpacity(0.5),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      userRole.value,
+                                      style: TextStyle(
+                                        color: TColor.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : const SizedBox()),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  // Personal information section
+                  FadeInUp(
+                    delay: const Duration(milliseconds: 400),
+                    child: Container(
+                      width: width * 0.9,
+                      margin: EdgeInsets.symmetric(horizontal: width * 0.05),
+                      padding: const EdgeInsets.all(25),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.2),
+                          width: 1,
                         ),
-                        SizedBox(height: 30),
-                        FadeInDown(
-                          delay: Duration(milliseconds: 700),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                "Personal Information :",
+                                "Personal Information",
                                 style: TextStyle(
                                   color: TColor.white,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 18,
+                                  fontSize: 20,
                                 ),
                               ),
-                              TextButton(
-                                child: Text(
-                                  "Change",
-                                  style: TextStyle(color: TColor.white),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: TColor.primary.withOpacity(0.3),
+                                  shape: BoxShape.circle,
                                 ),
-                                onPressed: () {
-                                  Get.to(UpdatePersonalInfo());
-                                },
+                                child: IconButton(
+                                  onPressed: () {
+                                    Get.to(const UpdatePersonalInfo());
+                                  },
+                                  icon: Icon(
+                                    Icons.edit,
+                                    color: TColor.white,
+                                    size: 20,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                        FadeInDown(
-                            delay: Duration(milliseconds: 700),
-                            child:
-                                Divider(color: TColor.white, endIndent: 110)),
-                        SizedBox(height: 20),
-                        FadeInDown(
-                          delay: Duration(milliseconds: 800),
-                          child: Column(
-                            children: [
-                              InfoTile(
-                                onTap: () {},
-                                name: "Name:",
-                                value: storeController.userName.value,
-                              ),
-                              SizedBox(height: 20),
-                              InfoTile(
-                                onTap: () {},
-                                name: "E-mail:",
-                                value: storeController.userMail.value,
-                              ),
-                              SizedBox(height: 20),
-                              InfoTile(
-                                onTap: () {},
-                                name: "Phine Number:",
-                                value: storeController.userNumber.value,
-                              ),
-                              SizedBox(height: 40),
-                            ],
+                          const SizedBox(height: 20),
+                          Divider(
+                            color: Colors.white.withOpacity(0.3),
+                            thickness: 1,
                           ),
-                        ),
-                        FadeInDown(
-                          delay: Duration(milliseconds: 900),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Other Options :",
-                                style: TextStyle(
-                                  color: TColor.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              Divider(color: TColor.white, endIndent: 180),
-                              SizedBox(height: 30),
-                              InfoTile2(
-                                onTap: () async {
-                                  await FirebaseAuth.instance.signOut();
-                                  Get.off(LogIn());
-                                },
-                                name: "Log Out",
-                                value: "",
-                                icon: Icons.logout,
-                              ),
-                              SizedBox(height: 20),
-                            ],
+                          const SizedBox(height: 20),
+                          InfoTile(
+                            onTap: () {},
+                            name: "Full Name",
+                            value: storeController.userName.value,
+                            icon: Icons.person_outline,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 20),
+                          InfoTile(
+                            onTap: () {},
+                            name: "Email Address",
+                            value: storeController.userMail.value,
+                            icon: Icons.email_outlined,
+                          ),
+                          const SizedBox(height: 20),
+                          InfoTile(
+                            onTap: () {},
+                            name: "Phone Number",
+                            value: storeController.userNumber.value,
+                            icon: Icons.phone_outlined,
+                          ),
+                          Obx(() => accountCreationDate.value != null
+                              ? Column(
+                                  children: [
+                                    const SizedBox(height: 20),
+                                    InfoTile(
+                                      onTap: () {},
+                                      name: "Member Since",
+                                      value:
+                                          "${accountCreationDate.value!.day}/${accountCreationDate.value!.month}/${accountCreationDate.value!.year}",
+                                      icon: Icons.calendar_today_outlined,
+                                    ),
+                                  ],
+                                )
+                              : const SizedBox()),
+                        ],
+                      ),
                     ),
                   ),
+                  const SizedBox(height: 30),
+                  // Other options section
+                  FadeInUp(
+                    delay: const Duration(milliseconds: 500),
+                    child: Container(
+                      width: width * 0.9,
+                      margin: EdgeInsets.symmetric(horizontal: width * 0.05),
+                      padding: const EdgeInsets.all(25),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.2),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Account Options",
+                            style: TextStyle(
+                              color: TColor.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Divider(
+                            color: Colors.white.withOpacity(0.3),
+                            thickness: 1,
+                          ),
+                          const SizedBox(height: 20),
+                          InfoTile2(
+                            onTap: () async {
+                              await FirebaseAuth.instance.signOut();
+                              Get.off(const LogIn());
+                            },
+                            name: "Log Out",
+                            value: "",
+                            icon: Icons.logout,
+                          ),
+                          const SizedBox(height: 20),
+                          InfoTile2(
+                            onTap: () {
+                              // TODO: Implement account deletion
+                            },
+                            name: "Delete Account",
+                            value: "",
+                            icon: Icons.delete_outline,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
                 ],
               ),
             ),
@@ -190,23 +367,40 @@ class InfoTile extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          Text(
-            name,
-            style: TextStyle(
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: TColor.primary.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
               color: TColor.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 20,
+              size: 20,
             ),
           ),
-          SizedBox(width: 20),
+          const SizedBox(width: 15),
           Expanded(
+            flex: 2,
             child: Text(
-              value,
+              name,
+              style: TextStyle(
+                color: TColor.white.withOpacity(0.8),
+                fontWeight: FontWeight.w500,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value.isEmpty ? "Not provided" : value,
               style: TextStyle(
                 color: TColor.white,
                 fontWeight: FontWeight.w400,
-                fontSize: 17,
+                fontSize: 16,
               ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -233,34 +427,47 @@ class InfoTile2 extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      child: Row(
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: TColor.white, size: 30),
-              SizedBox(width: 10),
-              Text(
-                name,
-                style: TextStyle(
-                  color: TColor.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 20,
-                ),
-              ),
-            ],
+      child: Container(
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.15),
+            width: 1,
           ),
-          SizedBox(width: 20),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: TColor.primary.withOpacity(0.3),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
                 color: TColor.white,
-                fontWeight: FontWeight.w600,
-                fontSize: 20,
+                size: 20,
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 15),
+            Text(
+              name,
+              style: TextStyle(
+                color: TColor.white,
+                fontWeight: FontWeight.w500,
+                fontSize: 16,
+              ),
+            ),
+            const Spacer(),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: TColor.white.withOpacity(0.7),
+              size: 16,
+            ),
+          ],
+        ),
       ),
     );
   }

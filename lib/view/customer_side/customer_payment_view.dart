@@ -38,6 +38,7 @@ class _CustomerPaymentViewState extends State<CustomerPaymentView> {
   GlobalKey<FormState> formState = GlobalKey<FormState>();
   final cardID = TextEditingController();
   final amount = TextEditingController();
+
   clearField() {
     customerName.clear();
     cardID.clear();
@@ -94,9 +95,6 @@ class _CustomerPaymentViewState extends State<CustomerPaymentView> {
           widget.designerID, cardID.text, amount.text);
 
       changeDesignStatus();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Your order has been sent !')),
-      );
     } catch (e) {
       print(e);
     }
@@ -106,13 +104,14 @@ class _CustomerPaymentViewState extends State<CustomerPaymentView> {
   @override
   void initState() {
     fetchDesignerToken();
-
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
+    var width = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: TColor.background,
       body: SafeArea(
@@ -120,11 +119,21 @@ class _CustomerPaymentViewState extends State<CustomerPaymentView> {
           width: double.infinity,
           height: height,
           decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                TColor.background.withOpacity(0.9),
+                TColor.primary.withOpacity(0.6),
+              ],
+            ),
             image: DecorationImage(
-              image: AssetImage(
-                "assets/img/bg.png",
+              image: AssetImage("assets/img/bg.png"),
+              fit: BoxFit.cover,
+              colorFilter: ColorFilter.mode(
+                Colors.black.withOpacity(0.2),
+                BlendMode.darken,
               ),
-              fit: BoxFit.fill,
             ),
           ),
           child: SingleChildScrollView(
@@ -132,98 +141,273 @@ class _CustomerPaymentViewState extends State<CustomerPaymentView> {
               children: [
                 SizedBox(height: 20),
                 CustomAppBar(),
-                SizedBox(height: 40),
+                SizedBox(height: 30),
+                // Header section
                 FadeInDown(
-                  delay: Duration(milliseconds: 500),
-                  child: Text(
-                    "please enter the payment information\n to complete payment process",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: TColor.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                  delay: Duration(milliseconds: 300),
+                  child: Container(
+                    width: width * 0.9,
+                    margin: EdgeInsets.symmetric(horizontal: width * 0.05),
+                    padding: EdgeInsets.all(25),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(25),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 15,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: TColor.primary.withOpacity(0.2),
+                          ),
+                          child: Icon(
+                            Icons.payment,
+                            size: 50,
+                            color: TColor.white,
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        Text(
+                          "Complete Your Payment",
+                          style: TextStyle(
+                            color: TColor.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24,
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          "Please enter your payment information to complete the purchase of ${widget.designName}",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: TColor.white.withOpacity(0.9),
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                SizedBox(height: 80),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25),
-                  child: FadeInDown(
-                    delay: Duration(milliseconds: 600),
+                SizedBox(height: 30),
+                // Payment form section
+                FadeInUp(
+                  delay: Duration(milliseconds: 400),
+                  child: Container(
+                    width: width * 0.9,
+                    margin: EdgeInsets.symmetric(horizontal: width * 0.05),
+                    padding: EdgeInsets.all(25),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(25),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
                     child: Form(
                       key: formState,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Text(
+                            "Payment Information",
+                            style: TextStyle(
+                              color: TColor.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          ),
+                          SizedBox(height: 20),
+                          Divider(
+                            color: Colors.white.withOpacity(0.3),
+                            thickness: 1,
+                          ),
+                          SizedBox(height: 20),
+                          Text(
+                            "Customer Name",
+                            style: TextStyle(
+                              color: TColor.white.withOpacity(0.8),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(height: 10),
                           CustomTextForm(
-                            hinttext: "Customer Name",
+                            hinttext: "Enter your full name",
                             mycontroller: customerName,
                             secure: false,
+                            prefixIcon: Icon(
+                              Icons.person_outline,
+                              color: TColor.primary,
+                            ),
                             validator: (val) {
-                              if (val == "") {
-                                return "Can't be empty";
+                              if (val == null || val.isEmpty) {
+                                return "Customer name can't be empty";
                               }
-                            },
-                          ),
-                          SizedBox(height: 40),
-                          CustomTextForm(
-                            hinttext: "Card ID",
-                            mycontroller: cardID,
-                            secure: false,
-                            validator: (val) {
-                              if (val == "") {
-                                return "Can't be empty";
-                              }
-                            },
-                          ),
-                          SizedBox(height: 40),
-                          CustomTextForm(
-                            hinttext: "Amount",
-                            mycontroller: amount,
-                            secure: false,
-                            validator: (val) {
-                              if (val == "") {
-                                return "Can't be empty";
-                              }
+                              return null;
                             },
                           ),
                           SizedBox(height: 20),
+                          Text(
+                            "Card ID",
+                            style: TextStyle(
+                              color: TColor.white.withOpacity(0.8),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          CustomTextForm(
+                            hinttext: "Enter your card ID",
+                            mycontroller: cardID,
+                            secure: false,
+                            prefixIcon: Icon(
+                              Icons.credit_card_outlined,
+                              color: TColor.primary,
+                            ),
+                            validator: (val) {
+                              if (val == null || val.isEmpty) {
+                                return "Card ID can't be empty";
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 20),
+                          Text(
+                            "Amount",
+                            style: TextStyle(
+                              color: TColor.white.withOpacity(0.8),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          CustomTextForm(
+                            hinttext: "Enter payment amount",
+                            mycontroller: amount,
+                            secure: false,
+                            prefixIcon: Icon(
+                              Icons.attach_money,
+                              color: TColor.primary,
+                            ),
+                            validator: (val) {
+                              if (val == null || val.isEmpty) {
+                                return "Amount can't be empty";
+                              }
+                              if (double.tryParse(val) == null) {
+                                return "Please enter a valid amount";
+                              }
+                              return null;
+                            },
+                          ),
                         ],
                       ),
                     ),
                   ),
                 ),
-                SizedBox(height: 50),
-                FadeInDown(
-                  delay: Duration(milliseconds: 700),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ProfileBtn(
-                          title: "Pay",
-                          onTap: () {
-                            if (formState.currentState!.validate()) {
-                              print(
-                                  " designer iddddddddddd ${widget.designerID}");
-                              print(
-                                  "=====================${storeController.designerToken.value}");
+                SizedBox(height: 30),
+                // Action buttons
+                FadeInUp(
+                  delay: Duration(milliseconds: 500),
+                  child: Container(
+                    width: width * 0.9,
+                    margin: EdgeInsets.symmetric(horizontal: width * 0.05),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: ProfileBtn(
+                            title: "Pay Now",
+                            onTap: () {
+                              if (formState.currentState!.validate()) {
+                                print(
+                                    " designer iddddddddddd ${widget.designerID}");
+                                print(
+                                    "=====================${storeController.designerToken.value}");
 
-                              sendAndStoreNotifications(
-                                  'You Have Received A New Order',
-                                  "Order Request");
-                              sendOrder();
+                                sendAndStoreNotifications(
+                                    'You Have Received A New Order',
+                                    "Order Request");
+                                sendOrder();
+                                clearField();
+
+                                // Show success dialog
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      backgroundColor: TColor.background,
+                                      title: Text(
+                                        "Payment Successful!",
+                                        style: TextStyle(
+                                          color: TColor.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      content: Text(
+                                        "Your payment has been processed successfully. The designer will be notified of your order.",
+                                        style: TextStyle(
+                                          color: TColor.white.withOpacity(0.9),
+                                        ),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                            Get.back();
+                                          },
+                                          child: Text(
+                                            "OK",
+                                            style: TextStyle(
+                                              color: TColor.primary,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              } else {
+                                print("Validation failed");
+                              }
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 20),
+                        Expanded(
+                          child: ProfileBtn(
+                            title: "Cancel",
+                            onTap: () {
                               clearField();
-                            } else {
-                              print("noo");
-                            }
-                          }),
-                      ProfileBtn(
-                          title: "Cancel",
-                          onTap: () {
-                            Get.back();
-                          }),
-                    ],
+                              Get.back();
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
+                SizedBox(height: 30),
               ],
             ),
           ),

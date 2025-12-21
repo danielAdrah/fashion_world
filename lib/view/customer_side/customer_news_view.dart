@@ -4,6 +4,7 @@ import 'package:cloudinary_flutter/image/cld_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../common_widget/custom_appBar.dart';
+import '../../common_widget/post_tile.dart';
 import '../../controller/store_controller.dart';
 import '../../theme.dart';
 
@@ -43,7 +44,7 @@ class _CustomerNewsViewState extends State<CustomerNewsView> {
                 Padding(
                   padding: const EdgeInsets.only(left: 25),
                   child: Text(
-                    "News",
+                    "N E W S",
                     style: TextStyle(
                       color: TColor.white,
                       fontWeight: FontWeight.bold,
@@ -94,70 +95,6 @@ class _CustomerNewsViewState extends State<CustomerNewsView> {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class PostTile extends StatelessWidget {
-  const PostTile({
-    super.key,
-    required this.name,
-    required this.content,
-    required this.img,
-  });
-  final String name;
-  final String content;
-  final String img;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: const Color.fromARGB(255, 212, 210, 210),
-                radius: 30,
-                child: Icon(
-                  Icons.person_2_outlined,
-                  size: 30,
-                ),
-              ),
-              SizedBox(width: 10),
-              Text(
-                name,
-                style: TextStyle(
-                    color: TColor.black,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15),
-              ),
-            ],
-          ),
-          SizedBox(height: 8),
-          Text(
-            content,
-            textAlign: TextAlign.start,
-            style: TextStyle(
-              color: TColor.black,
-            ),
-          ),
-          SizedBox(height: 8),
-          CldImageWidget(
-            publicId: img,
-            width: double.infinity,
-            // height: 70,
-            fit: BoxFit.fill,
-          ),
-        ],
       ),
     );
   }

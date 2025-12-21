@@ -4,6 +4,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../common_widget/chat_bubble.dart';
 import '../../common_widget/custom_textField.dart';
@@ -66,31 +67,41 @@ class _ChatPageState extends State<ChatPage> {
   void scrollDown() {
     scrollController.animateTo(
       scrollController.position.maxScrollExtent,
-      duration: Duration(seconds: 1),
-      curve: Curves.fastOutSlowIn,
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeOut,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final double height = MediaQuery.of(context).size.height;
     return Scaffold(
-      backgroundColor: TColor.chatbackground,
+      backgroundColor: TColor.primary,
       appBar: AppBar(
+        toolbarHeight: height * 0.09,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
               bottomLeft: Radius.circular(25),
               bottomRight: Radius.circular(25)),
         ),
-        iconTheme: IconThemeData(color: TColor.white),
         title: FadeInDown(
           delay: Duration(milliseconds: 300),
           child: Text(
             widget.receiverName,
-            style: TextStyle(color: TColor.white),
+            style: TextStyle(
+              color: TColor.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
+        leading: IconButton(
+            onPressed: () {
+              Get.back();
+            },
+            icon: Icon(Icons.arrow_back, color: Colors.white)),
         centerTitle: true,
-        backgroundColor: TColor.primary,
+        backgroundColor: TColor.background,
+        elevation: 0,
       ),
       body: Column(
         children: [
@@ -112,10 +123,23 @@ class _ChatPageState extends State<ChatPage> {
           // if has errors
           if (snapshot.hasError) {
             return Center(
-              child: Text(
-                snapshot.error.toString(),
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.inversePrimary),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    color: Colors.red,
+                    size: 50,
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    "Error loading messages",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.inversePrimary,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
               ),
             );
           }
@@ -123,22 +147,61 @@ class _ChatPageState extends State<ChatPage> {
           //if it is loading
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
-              child: CircularProgressIndicator(
-                color: TColor.primary,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    color: TColor.primary,
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    "Loading messages...",
+                    style: TextStyle(
+                      color: TColor.primary,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
             );
           }
+
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(
-                child: Text(
-              "No messages yet",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ));
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.chat_bubble_outline,
+                    color: TColor.primary.withOpacity(0.5),
+                    size: 80,
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    "No messages yet",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: TColor.primary,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    "Start a conversation with ${widget.receiverName}",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: TColor.primary.withOpacity(0.7),
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
           //return a list of messages
           return ListView(
             controller: scrollController,
+            padding: EdgeInsets.symmetric(vertical: 20),
             children: snapshot.data!.docs
                 .map((doc) => buildMessageItem(doc))
                 .toList(),
@@ -158,53 +221,98 @@ class _ChatPageState extends State<ChatPage> {
     DateTime dateTime = timestamp.toDate();
     String messageDate = dateTime.toString().substring(11, 16);
 
-    return Row(
-      mainAxisAlignment:
-          isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-      children: [
-        ChatBubble(
-          message: data["message"],
-          messageTime: messageDate,
-          isCurrentUser: isCurrentUser,
-          messageId: doc.id,
-          userId: data['senderID'],
-        ),
-      ],
+    return FadeInUp(
+      duration: Duration(milliseconds: 300),
+      child: Row(
+        mainAxisAlignment:
+            isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        children: [
+          ChatBubble(
+            message: data["message"],
+            messageTime: messageDate,
+            isCurrentUser: isCurrentUser,
+            messageId: doc.id,
+            userId: data['senderID'],
+          ),
+        ],
+      ),
     );
   }
 
   //========user input============
   Widget buildUserInput() {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: 20,
-        left: 15,
+    return Container(
+      padding: EdgeInsets.only(bottom: 20, left: 15, right: 15, top: 10),
+      decoration: BoxDecoration(
+        color: TColor.background,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: Offset(0, -5),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Expanded(
-            child: CustomTextForm(
-              mycontroller: messageController,
-              secure: false,
-              focusNode: myFocusNode,
-              hinttext: "Type a message",
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 5,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: CustomTextForm(
+                mycontroller: messageController,
+                secure: false,
+                focusNode: myFocusNode,
+                hinttext: "Type a message...",
+                suffixIcon: Icons.attach_file,
+                onTap: () {
+                  // TODO: Implement attachment functionality
+                },
+              ),
             ),
           ),
+          SizedBox(width: 10),
           Container(
-              margin: EdgeInsets.only(right: 15),
-              decoration: BoxDecoration(
-                color: TColor.primary,
-                shape: BoxShape.circle,
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  TColor.primary.withOpacity(0.9),
+                  TColor.primary.withOpacity(0.7),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              child: Center(
-                  child: IconButton(
-                      onPressed: () {
-                        sendMessage();
-                      },
-                      icon: Icon(
-                        Icons.send,
-                        color: Colors.white,
-                      ))))
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: TColor.primary.withOpacity(0.4),
+                  blurRadius: 8,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Center(
+              child: IconButton(
+                onPressed: () {
+                  sendMessage();
+                },
+                icon: Icon(
+                  Icons.send,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

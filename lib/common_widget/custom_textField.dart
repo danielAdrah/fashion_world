@@ -1,6 +1,7 @@
-// ignore_for_file: prefer_const_constructors, must_be_immutable
+// ignore_for_file: prefer_const_constructors, must_be_immutables
 
 import 'package:flutter/material.dart';
+import '../theme.dart';
 
 class CustomTextForm extends StatelessWidget {
   final String hinttext;
@@ -36,32 +37,59 @@ class CustomTextForm extends StatelessWidget {
       obscureText: secure,
       validator: validator,
       onChanged: onChanged,
-      style: TextStyle(color: Colors.black),
+      style: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w500,
+      ),
       decoration: InputDecoration(
-        prefixIcon: prefixIcon,
+        prefixIcon: Padding(
+          padding: EdgeInsets.all(12.0),
+          child: prefixIcon,
+        ),
         hintText: hinttext,
-        suffixIcon: InkWell(
-            onTap: onTap,
-            child: Icon(
-              suffixIcon,
-              color: color,
-            )),
-        hintStyle: TextStyle(fontSize: 14, color: Colors.grey),
-        contentPadding: EdgeInsets.symmetric(vertical: 2, horizontal: 20),
+        suffixIcon: suffixIcon != null
+            ? IconButton(
+                onPressed: onTap,
+                icon: Icon(
+                  suffixIcon,
+                  color: TColor.white.withOpacity(0.7),
+                ),
+              )
+            : null,
+        hintStyle: TextStyle(
+          fontSize: 15,
+          color: Colors.white.withOpacity(0.7),
+          fontWeight: FontWeight.w400,
+        ),
+        contentPadding: EdgeInsets.symmetric(vertical: 18, horizontal: 20),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: Colors.white.withOpacity(0.15),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(35),
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(
+            color: Colors.white.withOpacity(0.3),
+            width: 1,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(35),
-            borderSide: BorderSide(
-              color: Color.fromARGB(31, 179, 206, 231),
-            )),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(35),
+          borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide(
-            color: Color.fromARGB(31, 179, 206, 231),
+            color: Colors.white.withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(
+            color: TColor.primary,
+            width: 2,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(
+            color: Colors.redAccent.withOpacity(0.7),
+            width: 1.5,
           ),
         ),
       ),
