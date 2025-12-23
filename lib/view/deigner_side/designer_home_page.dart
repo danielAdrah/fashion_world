@@ -1,9 +1,9 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, must_be_immutable
 
 import 'package:animate_do/animate_do.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudinary_flutter/image/cld_image.dart';
-import 'package:fashion_world/common_widget/primary_button.dart';
+import 'package:fashion_world/common_widget/design_grid_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -12,7 +12,6 @@ import '../../controller/store_controller.dart';
 import '../../services/notification_service.dart';
 import '../../theme.dart';
 import '../customer_side/customer_profile_view.dart';
-import '../customer_side/design_detail.dart';
 import 'chat_view.dart';
 import 'designer_design_detail.dart';
 import 'designer_news_view.dart';
@@ -292,10 +291,19 @@ class _DesignerHomePageState extends State<DesignerHomePage> {
                                                       .toLowerCase());
                                             });
                                           }
-                                          return ListView.builder(
+                                          return GridView.builder(
                                             shrinkWrap: true,
                                             physics:
                                                 const NeverScrollableScrollPhysics(),
+                                            gridDelegate:
+                                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                              crossAxisCount:
+                                                  2, // 2 items per row
+                                              crossAxisSpacing: 15,
+                                              mainAxisSpacing: 15,
+                                              childAspectRatio:
+                                                  0.8, // Slightly taller than wide
+                                            ),
                                             itemCount: snap.length,
                                             itemBuilder: (context, index) {
                                               var design = snap[index];
@@ -323,7 +331,7 @@ class _DesignerHomePageState extends State<DesignerHomePage> {
                                                         design['imageUrl'],
                                                   ));
                                                 },
-                                                child: DesignTile(
+                                                child: DesignGridTile(
                                                   img: design['imageUrl'],
                                                   title: design['title'],
                                                 ),

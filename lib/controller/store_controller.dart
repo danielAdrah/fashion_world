@@ -4,10 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../models/cart_item.dart';
+import '../services/notification_service.dart';
 
 class StoreController extends GetxController {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
+  final NotificationService notificationService = NotificationService();
   RxList<QueryDocumentSnapshot> allDesignes = <QueryDocumentSnapshot>[].obs;
   RxList<QueryDocumentSnapshot> designerOrders = <QueryDocumentSnapshot>[].obs;
   RxList<QueryDocumentSnapshot> comments = <QueryDocumentSnapshot>[].obs;
@@ -35,8 +38,8 @@ class StoreController extends GetxController {
   }
 
 //=====ADD A NEW DESIGN
-  Future<void> addDesign(String title, price, fabric, color, size, imageUrl, designerName,
-      BuildContext context) async {
+  Future<void> addDesign(String title, price, fabric, color, size, imageUrl,
+      designerName, BuildContext context) async {
     try {
       addDesignLoading.value = true;
       DocumentReference response = await firestore.collection('designes').add({
@@ -131,6 +134,7 @@ class StoreController extends GetxController {
     designerID,
     cardID,
     amount,
+    String designId, // Add this parameter
   ) async {
     try {
       DocumentReference response = await firestore.collection('orders').add({
@@ -138,6 +142,7 @@ class StoreController extends GetxController {
         'designName': designName,
         'designerId': designerID,
         'customerId': auth.currentUser!.uid,
+        'designId': designId, // Add this line
       });
       print("order sent");
       DocumentReference paymentRef = firestore
@@ -248,5 +253,120 @@ class StoreController extends GetxController {
     } catch (e) {
       print(e);
     }
+  }
+
+  // Add method to add item to cart
+  Future<void> addToCart({
+    required String designId,
+    required String designName,
+    required String designerId,
+    required String designerName,
+    required double price,
+    required String imageUrl,
+  }) async {
+    try {
+      final customerId = auth.currentUser!.uid;
+
+      print("Adding item to cart:");
+      print("  Design ID: $designId");
+      print("  Design Name: $designName");
+      print("  Designer ID: $designerId");
+      print("  Designer Name: $designerName");
+      print("  Price: $price");
+      print("  Image URL (passed in): '$imageUrl'");
+
+      // Always try to fetch the image URL from the design document to ensure we have the correct one
+      String finalImageUrl = imageUrl;
+      print("Fetching design document to get image URL");
+      try {
+        final designDoc =
+            await firestore.collection('designes').doc(designId).get();
+        if (designDoc.exists) {
+          final fetchedImageUrl = designDoc.get('imageUrl') ?? '';
+          print("Fetched image URL from design document: '$fetchedImageUrl'");
+          if (fetchedImageUrl.isNotEmpty) {
+            finalImageUrl = fetchedImageUrl;
+            print("Using fetched image URL instead of passed one");
+          } else {
+            print("Fetched image URL is empty, using passed one: '$imageUrl'");
+          }
+        } else {
+          print(
+              "Design document does not exist, using passed image URL: '$imageUrl'");
+        }
+      } catch (e) {
+        print("Error fetching design image URL: $e");
+        print("Using passed image URL: '$imageUrl'");
+      }
+
+      final cartItemData = {
+        'designId': designId,
+        'designName': designName,
+        'designerId': designerId,
+        'designerName': designerName,
+        'price': price,
+        'status': 'pending',
+        'timestamp': Timestamp.now(),
+        'imageUrl': finalImageUrl,
+      };
+
+      print("Cart item data to be saved: $cartItemData");
+
+      final docRef = await firestore
+          .collection('cart')
+          .doc(customerId)
+          .collection('items')
+          .add(cartItemData);
+
+      print("Added to cart successfully with document ID: ${docRef.id}");
+      print("Final image URL stored: '$finalImageUrl'");
+    } catch (e) {
+      print("Error adding to cart: $e");
+    }
+  }
+
+  // Fetch cart items
+  Stream<List<CartItem>> getCartItems() {
+    final customerId = auth.currentUser!.uid;
+    print("Fetching cart items for customer: $customerId");
+
+    return firestore
+        .collection('cart')
+        .doc(customerId)
+        .collection('items')
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      print(
+          "Received cart items snapshot with ${snapshot.docs.length} documents");
+      final items = snapshot.docs.map((doc) {
+        print("Processing cart item document: ${doc.id}");
+        print("Document data: ${doc.data()}");
+        final cartItem = CartItem.fromMap(doc.data(), doc.id);
+        print("Created cart item with image URL: '${cartItem.imageUrl}'");
+        return cartItem;
+      }).toList();
+      print("Returning ${items.length} cart items");
+      return items;
+    });
+  }
+
+  // Update cart item status (when designer accepts/rejects)
+  Future<void> updateCartItemStatus(String itemId, String status) async {
+    final customerId = auth.currentUser!.uid;
+
+    await firestore
+        .collection('cart')
+        .doc(customerId)
+        .collection('items')
+        .doc(itemId)
+        .update({'status': status});
+  }
+
+  // New method to notify customers about order status changes
+  Future<void> notifyOrderStatusChange(
+      String customerId, String orderStatus, String designName) async {
+    await notificationService.notifyOrderStatusChange(
+        customerId, orderStatus, designName);
   }
 }

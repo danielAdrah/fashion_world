@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, body_might_complete_normally_nullable, avoid_print, unused_local_variable, use_build_context_synchronously, unnecessary_null_comparison, unnecessary_null_in_if_null_operators, unused_import, must_be_immutables
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, body_might_complete_normally_nullable, avoid_print, unused_local_variable, use_build_context_synchronously, unnecessary_null_comparison, unnecessary_null_in_if_null_operators, unused_import, must_be_immutables, must_be_immutable
 
 import 'package:animate_do/animate_do.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,8 +9,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 import '../../common_widget/custom_textField.dart';
+import '../../common_widget/design_grid_tile.dart';
 import '../../controller/store_controller.dart';
 import '../../theme.dart';
+import 'cart_view.dart';
 import 'customer_news_view.dart';
 import 'customer_notification_view.dart';
 import 'design_detail.dart';
@@ -147,18 +149,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                                         img: "assets/img/noti1.png",
                                         label: "My Cart",
                                         onTap: () {
-                                          // TODO: Implement cart functionality
-                                        },
-                                        color: TColor.primary,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: buttonWidth,
-                                      child: _buildActionButton(
-                                        img: "assets/img/noti1.png",
-                                        label: "Wishlist",
-                                        onTap: () {
-                                          // TODO: Implement wishlist functionality
+                                          Get.to(CartView());
                                         },
                                         color: TColor.primary,
                                       ),
@@ -279,15 +270,28 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                                                       .toLowerCase());
                                             });
                                           }
-                                          return ListView.builder(
+                                          return GridView.builder(
                                             shrinkWrap: true,
                                             physics:
                                                 NeverScrollableScrollPhysics(),
+                                            gridDelegate:
+                                                SliverGridDelegateWithFixedCrossAxisCount(
+                                              crossAxisCount:
+                                                  2, // 2 items per row
+                                              crossAxisSpacing: 15,
+                                              mainAxisSpacing: 15,
+                                              childAspectRatio:
+                                                  0.8, // Slightly taller than wide
+                                            ),
                                             itemCount: snap.length,
                                             itemBuilder: (context, index) {
                                               var design = snap[index];
+                                              print(
+                                                  "Design data: ${design.data()}");
                                               return InkWell(
                                                 onTap: () {
+                                                  print(
+                                                      "Navigating to design detail with image: '${design['imageUrl']}'");
                                                   Get.to(DesginDetail(
                                                     designerName:
                                                         design['desingerName'],
@@ -310,7 +314,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                                                         design['imageUrl'],
                                                   ));
                                                 },
-                                                child: DesignTile(
+                                                child: DesignGridTile(
                                                   img: design['imageUrl'],
                                                   title: design['title'],
                                                 ),

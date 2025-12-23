@@ -702,11 +702,14 @@ class _DesginDetailState extends State<DesginDetail>
                             title: "Order Now",
                             onTap: () {
                               if (widget.designStatus == "available") {
+                                print(
+                                    "Navigating to payment view with design image: '${widget.designImage}'");
                                 Get.to(CustomerPaymentView(
                                   designerID: widget.designerID,
                                   designName: widget.designName,
                                   designStatus: widget.designStatus,
                                   designId: widget.designID,
+                                  designImage: widget.designImage,
                                 ));
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(

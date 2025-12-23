@@ -8,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 import '../../controller/store_controller.dart';
+import '../../models/cart_item.dart';
 import '../../services/notification_service.dart';
 import '../../theme.dart';
 
@@ -20,14 +21,60 @@ class OrdersView extends StatefulWidget {
 
 class _OrdersViewState extends State<OrdersView> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  final notiService = NotificationService();
-  final storeController = Get.put(StoreController());
+  final storeController =
+      Get.find<StoreController>(); // Use existing controller
   String? customerToken;
+
+  // Add a method to update cart item status
+  Future<void> updateCartItemStatus(
+      String customerId, String designId, String status) async {
+    try {
+      print(
+          "Updating cart item status for customer: $customerId, design: $designId, status: $status");
+
+      final cartItemsSnapshot = await firestore
+          .collection('cart')
+          .doc(customerId)
+          .collection('items')
+          .where('designId', isEqualTo: designId)
+          .get();
+
+      print("Found ${cartItemsSnapshot.docs.length} cart items to update");
+
+      for (var doc in cartItemsSnapshot.docs) {
+        await firestore
+            .collection('cart')
+            .doc(customerId)
+            .collection('items')
+            .doc(doc.id)
+            .update({'status': status});
+        print("Updated cart item ${doc.id} status to $status");
+      }
+    } catch (e) {
+      print("Error updating cart item status: $e");
+    }
+  }
+
+  // Add a method to update design status
+  Future<void> updateDesignStatus(String designId, String status) async {
+    try {
+      print("Updating design status for design: $designId, status: $status");
+      await firestore
+          .collection('designes')
+          .doc(designId)
+          .update({'status': status});
+      print("Updated design status successfully");
+    } catch (e) {
+      print("Error updating design status: $e");
+    }
+  }
 
   sendAndStoreNotifications(
       String body, title, customerId, customerName, token) async {
     try {
-      notiService.sendNotifications(body, title, token);
+      // Use the notification service from StoreController
+      await storeController.notificationService
+          .sendNotifications(body, title, token);
 
       //store the notification
       await firestore
@@ -40,9 +87,9 @@ class _OrdersViewState extends State<OrdersView> {
         'customerName': customerName,
         'timestamp': FieldValue.serverTimestamp(),
       });
-      print("after adding to thr noti collection");
+      print("after adding to the notification collection");
     } catch (e) {
-      print("errorrrrrrrrrrrrrrr $e");
+      print("Error in sendAndStoreNotifications: $e");
     }
   }
 
@@ -165,14 +212,24 @@ class _OrdersViewState extends State<OrdersView> {
                                     if (docSnap.exists) {
                                       customerToken = docSnap.get('token');
                                     }
-                                    print("==============$customerToken");
+                                    print("Customer token: $customerToken");
+
+                                    // Update cart item status to confirmed
+                                    await updateCartItemStatus(
+                                        order['customerId'],
+                                        order['designId'] ?? '',
+                                        'confirmed');
+
+                                    // Update design status to unavailable
+                                    await updateDesignStatus(
+                                        order['designId'] ?? '', 'unavailable');
 
                                     sendAndStoreNotifications(
                                       'Your ${order['designName']} Order Is Accepted',
                                       'Order Accepted',
                                       order['customerId'],
                                       order['customerName'],
-                                      customerToken,
+                                      customerToken ?? '',
                                     );
                                     storeController.deleteOrder(order.id);
 
@@ -193,13 +250,20 @@ class _OrdersViewState extends State<OrdersView> {
                                     if (docSnap.exists) {
                                       customerToken = docSnap.get('token');
                                     }
-                                    print("==============$customerToken");
+                                    print("Customer token: $customerToken");
+
+                                    // Update cart item status to rejected
+                                    await updateCartItemStatus(
+                                        order['customerId'],
+                                        order['designId'] ?? '',
+                                        'rejected');
+
                                     sendAndStoreNotifications(
                                       'Your ${order['designName']} Order Is Rejected',
                                       'Order Rejected',
                                       order['customerId'],
                                       order['customerName'],
-                                      customerToken,
+                                      customerToken ?? '',
                                     );
                                     storeController.deleteOrder(order.id);
 

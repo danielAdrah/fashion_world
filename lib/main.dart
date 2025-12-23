@@ -7,9 +7,8 @@ import 'firebase_options.dart';
 import 'services/notification_service.dart';
 import 'view/auth_view/auth_gate.dart';
 import 'view/customer_side/customer_profile_view.dart';
-import'package:cloudinary_flutter/cloudinary_context.dart';
-import'package:cloudinary_url_gen/cloudinary.dart';
-
+import 'package:cloudinary_flutter/cloudinary_context.dart';
+import 'package:cloudinary_url_gen/cloudinary.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +17,8 @@ void main() async {
   );
   final notificationService = NotificationService();
   await notificationService.initNotifications();
-  CloudinaryContext.cloudinary = Cloudinary.fromCloudName(cloudName: 'dvz3way0c');
+  CloudinaryContext.cloudinary =
+      Cloudinary.fromCloudName(cloudName: 'dvz3way0c');
 
   runApp(const MyApp());
 }

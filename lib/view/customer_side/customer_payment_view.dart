@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import '../../common_widget/custom_appBar.dart';
 import '../../common_widget/custom_textField.dart';
 import '../../controller/store_controller.dart';
+import '../../models/cart_item.dart';
 import '../../services/notification_service.dart';
 import '../../theme.dart';
 import 'update_personal_info.dart';
@@ -19,12 +20,14 @@ class CustomerPaymentView extends StatefulWidget {
     required this.designName,
     required this.designStatus,
     required this.designId,
+    required this.designImage,
   });
 
   final String designerID;
   final String designName;
   final String designStatus;
   final String designId;
+  final String designImage;
 
   @override
   State<CustomerPaymentView> createState() => _CustomerPaymentViewState();
@@ -43,16 +46,6 @@ class _CustomerPaymentViewState extends State<CustomerPaymentView> {
     customerName.clear();
     cardID.clear();
     amount.clear();
-  }
-
-  //====
-  changeDesignStatus() async {
-    FirebaseFirestore.instance
-        .collection('designes')
-        .doc(widget.designId)
-        .update({
-      'status': 'unavailable',
-    });
   }
 
   //======
@@ -89,14 +82,69 @@ class _CustomerPaymentViewState extends State<CustomerPaymentView> {
   }
 
   //====
+  // Method to fetch designer name
+  Future<String> fetchDesignerName() async {
+    try {
+      final docSnap =
+          await firestore.collection('users').doc(widget.designerID).get();
+      if (docSnap.exists) {
+        return docSnap.get('name') ?? 'Unknown Designer';
+      }
+      return 'Unknown Designer';
+    } catch (e) {
+      print("Error fetching designer name: $e");
+      return 'Unknown Designer';
+    }
+  }
+
   sendOrder() async {
     try {
-      storeController.createOrder(customerName.text, widget.designName,
-          widget.designerID, cardID.text, amount.text);
+      print("Sending order with the following details:");
+      print("  Designer ID: ${widget.designerID}");
+      print("  Design Name: ${widget.designName}");
+      print("  Design ID: ${widget.designId}");
+      print("  Design Image: '${widget.designImage}'");
 
-      changeDesignStatus();
+      // Create the order in existing system - now passing designId
+      storeController.createOrder(
+        customerName.text,
+        widget.designName,
+        widget.designerID,
+        cardID.text,
+        amount.text,
+        widget.designId,
+      );
+
+      // Fetch designer name
+      final designerName = await fetchDesignerName();
+      print("Fetched designer name: $designerName");
+
+      // Parse amount safely
+      double parsedAmount = 0.0;
+      try {
+        parsedAmount = double.parse(amount.text);
+        print("Parsed amount: $parsedAmount");
+      } catch (e) {
+        print("Error parsing amount: $e");
+        parsedAmount = 0.0; // Default to 0 if parsing fails
+      }
+
+      // Add to cart with pending status
+      print("Adding item to cart with image URL: '${widget.designImage}'");
+      storeController.addToCart(
+        designId: widget.designId,
+        designName: widget.designName,
+        designerId: widget.designerID,
+        designerName: designerName,
+        price: parsedAmount,
+        imageUrl: widget.designImage,
+      );
+
+      // Don't change design status immediately
+      // The design status will be updated when the designer accepts the order
+      print("Order sent and added to cart successfully");
     } catch (e) {
-      print(e);
+      print("Error in sendOrder: $e");
     }
   }
 

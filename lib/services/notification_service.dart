@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:googleapis_auth/auth_io.dart' as auth;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
@@ -74,6 +75,13 @@ class NotificationService {
     try {
       Future.delayed(const Duration(seconds: 30));
       var serverKeyAuthorization = await getAccessToken();
+
+      // If we couldn't get an access token, skip sending the notification
+      if (serverKeyAuthorization == null) {
+        print("Skipping notification send - no access token available");
+        return;
+      }
+
       const String urlEndPoint =
           "https://fcm.googleapis.com/v1/projects/fashionuniverse/messages:send";
 
@@ -109,6 +117,39 @@ class NotificationService {
       }
     } catch (e) {
       print("===============Error sending notification: $e");
+    }
+  }
+
+  // New method to notify customers about order status changes
+  Future<void> notifyOrderStatusChange(
+      String customerId, String orderStatus, String designName) async {
+    try {
+      // Get customer token
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
+      final docSnap = await firestore.collection('users').doc(customerId).get();
+      if (docSnap.exists) {
+        final customerToken = docSnap.get('token');
+
+        // Send notification
+        await sendNotifications(
+          'Your order for "$designName" has been $orderStatus',
+          'Order $orderStatus',
+          customerToken,
+        );
+
+        // Store notification
+        await firestore
+            .collection('users')
+            .doc(customerId)
+            .collection('notifications')
+            .add({
+          'title': 'Order $orderStatus',
+          'body': 'Your order for "$designName" has been $orderStatus',
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      print("Error notifying order status change: $e");
     }
   }
 }
