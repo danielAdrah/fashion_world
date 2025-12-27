@@ -17,6 +17,7 @@ import 'customer_news_view.dart';
 import 'customer_notification_view.dart';
 import 'design_detail.dart';
 import 'customer_profile_view.dart';
+import 'fashion_events_view.dart';
 
 class CustomerHomePage extends StatefulWidget {
   const CustomerHomePage({super.key});
@@ -146,7 +147,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                                     SizedBox(
                                       width: buttonWidth,
                                       child: _buildActionButton(
-                                        img: "assets/img/noti1.png",
+                                        img: "assets/img/cart.png",
                                         label: "My Cart",
                                         onTap: () {
                                           Get.to(CartView());
@@ -172,6 +173,17 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                                         label: "News",
                                         onTap: () {
                                           Get.to(CustomerNewsView());
+                                        },
+                                        color: TColor.primary,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: buttonWidth,
+                                      child: _buildActionButton(
+                                        img: "assets/img/event.png",
+                                        label: "Events",
+                                        onTap: () {
+                                          Get.to(FashionEventsView());
                                         },
                                         color: TColor.primary,
                                       ),

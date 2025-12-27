@@ -5,18 +5,23 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../models/cart_item.dart';
+import '../models/fashion_event.dart';
 import '../services/notification_service.dart';
+import '../services/event_service.dart';
 
 class StoreController extends GetxController {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
   final NotificationService notificationService = NotificationService();
+  final EventService eventService = EventService();
   RxList<QueryDocumentSnapshot> allDesignes = <QueryDocumentSnapshot>[].obs;
   RxList<QueryDocumentSnapshot> designerOrders = <QueryDocumentSnapshot>[].obs;
   RxList<QueryDocumentSnapshot> comments = <QueryDocumentSnapshot>[].obs;
   RxList<QueryDocumentSnapshot> allNotifications =
       <QueryDocumentSnapshot>[].obs;
   //=====
+  RxList<FashionEvent> allEvents = <FashionEvent>[].obs;
+  RxList<FashionEvent> featuredEvents = <FashionEvent>[].obs;
   RxString userName = ''.obs;
   RxString userMail = ''.obs;
   RxString userNumber = ''.obs;
@@ -368,5 +373,61 @@ class StoreController extends GetxController {
       String customerId, String orderStatus, String designName) async {
     await notificationService.notifyOrderStatusChange(
         customerId, orderStatus, designName);
+  }
+
+  //=======FASHION EVENTS
+
+  // Fetch all fashion events
+  void fetchAllEvents() {
+    eventService.getAllEvents().listen((events) {
+      allEvents.assignAll(events);
+      print("Fetched ${events.length} events");
+    }, onError: (error) {
+      print("Error fetching events: $error");
+    });
+  }
+
+  // Fetch featured fashion events
+  void fetchFeaturedEvents() {
+    eventService.getFeaturedEvents().listen((events) {
+      featuredEvents.assignAll(events);
+      print("Fetched ${events.length} featured events");
+    }, onError: (error) {
+      print("Error fetching featured events: $error");
+    });
+  }
+
+  // Add a new fashion event
+  Future<void> addEvent(FashionEvent event) async {
+    try {
+      await eventService.addEvent(event);
+      print("Event added successfully");
+      // Refresh the events list
+      fetchAllEvents();
+    } catch (e) {
+      print("Error adding event: $e");
+    }
+  }
+
+  // Get events by type
+  Stream<List<FashionEvent>> getEventsByType(String eventType) {
+    return eventService.getEventsByType(eventType);
+  }
+
+  // Get events by date range
+  Stream<List<FashionEvent>> getEventsByDateRange(
+      DateTime start, DateTime end) {
+    return eventService.getEventsByDateRange(start, end);
+  }
+
+  // Get events by location
+  Stream<List<FashionEvent>> getEventsByLocation(String location) {
+    return eventService.getEventsByLocation(location);
+  }
+
+  // Get events for current designer
+  Stream<List<FashionEvent>> getEventsForDesigner() {
+    String designerId = auth.currentUser!.uid;
+    return eventService.getEventsForDesigner(designerId);
   }
 }

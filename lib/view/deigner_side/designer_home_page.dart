@@ -16,6 +16,7 @@ import 'chat_view.dart';
 import 'designer_design_detail.dart';
 import 'designer_news_view.dart';
 import 'desingerNotification_view.dart';
+import 'designer_events_view.dart';
 import 'orders_view.dart';
 import 'publish_design_view.dart';
 
@@ -197,6 +198,18 @@ class _DesignerHomePageState extends State<DesignerHomePage> {
                                         label: "News",
                                         onTap: () {
                                           Get.to(const DesignerNewsView());
+                                        },
+                                        color: TColor.primary,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: buttonWidth,
+                                      child: _buildActionButton(
+                                        img:
+                                            "assets/img/event.png", // You can use any event-related image
+                                        label: "Events",
+                                        onTap: () {
+                                          Get.to(const DesignerEventsView());
                                         },
                                         color: TColor.primary,
                                       ),
