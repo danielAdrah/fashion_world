@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:animate_do/animate_do.dart';
 import 'package:cloudinary_flutter/image/cld_image.dart';
 import 'package:flutter/material.dart';
@@ -38,7 +40,7 @@ class FashionEventTile extends StatelessWidget {
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
               blurRadius: 15,
-              offset: Offset(0, 5),
+              offset: const Offset(0, 5),
             ),
           ],
         ),
@@ -50,14 +52,14 @@ class FashionEventTile extends StatelessWidget {
               Container(
                 width: double.infinity,
                 height: width > 600 ? 200 : 150,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(20),
                     topRight: Radius.circular(20),
                   ),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(20),
                     topRight: Radius.circular(20),
                   ),
@@ -71,7 +73,7 @@ class FashionEventTile extends StatelessWidget {
               ),
             // Event details
             Padding(
-              padding: EdgeInsets.all(15),
+              padding: const EdgeInsets.all(15),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -84,13 +86,13 @@ class FashionEventTile extends StatelessWidget {
                       fontSize: width > 600 ? 18 : 16,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   // Event type and organizer
                   Row(
                     children: [
                       Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: TColor.primary.withOpacity(0.3),
                           borderRadius: BorderRadius.circular(12),
@@ -103,7 +105,7 @@ class FashionEventTile extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           'by ${event.organizer}',
@@ -115,7 +117,7 @@ class FashionEventTile extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   // Date and location
                   Row(
                     children: [
@@ -124,7 +126,7 @@ class FashionEventTile extends StatelessWidget {
                         color: TColor.primary,
                         size: 16,
                       ),
-                      SizedBox(width: 5),
+                      const SizedBox(width: 5),
                       Expanded(
                         child: Text(
                           '$formattedStartDate - $formattedEndDate',
@@ -136,7 +138,7 @@ class FashionEventTile extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 5),
                   Row(
                     children: [
                       Icon(
@@ -144,7 +146,7 @@ class FashionEventTile extends StatelessWidget {
                         color: TColor.primary,
                         size: 16,
                       ),
-                      SizedBox(width: 5),
+                      const SizedBox(width: 5),
                       Expanded(
                         child: Text(
                           event.location,
@@ -157,7 +159,7 @@ class FashionEventTile extends StatelessWidget {
                     ],
                   ),
                   // Description
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Text(
                     event.description,
                     style: TextStyle(
@@ -167,7 +169,7 @@ class FashionEventTile extends StatelessWidget {
                     ),
                   ),
                   // Action buttons
-                  SizedBox(height: 15),
+                  const SizedBox(height: 15),
                   Row(
                     children: [
                       Expanded(
@@ -178,7 +180,7 @@ class FashionEventTile extends StatelessWidget {
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: TColor.primary,
-                            padding: EdgeInsets.symmetric(vertical: 12),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -192,11 +194,11 @@ class FashionEventTile extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       if (event.designers.isNotEmpty)
                         Container(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(10),

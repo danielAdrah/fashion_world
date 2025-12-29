@@ -1,13 +1,18 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fashion_world/common_widget/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../common_widget/custom_appBar.dart';
 import '../../common_widget/fashion_event_tile.dart';
-import '../../common_widget/primary_button.dart';
 import '../../controller/store_controller.dart';
 import '../../models/fashion_event.dart';
 import '../../theme.dart';
@@ -25,12 +30,19 @@ class _DesignerEventsViewState extends State<DesignerEventsView> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
-  final TextEditingController _imageUrlController = TextEditingController();
   final TextEditingController _organizerController = TextEditingController();
   final TextEditingController _websiteController = TextEditingController();
   String _selectedEventType = 'designer_showcase';
   DateTime? _startDate;
   DateTime? _endDate;
+
+  // Image upload variables
+  File? imageFile;
+  String? imageUrl;
+  String? publicId;
+  bool isUploading = false;
+  bool isUploadSuccess = false;
+  String uploadStatus = '';
 
   @override
   void initState() {
@@ -43,7 +55,6 @@ class _DesignerEventsViewState extends State<DesignerEventsView> {
     _titleController.dispose();
     _descriptionController.dispose();
     _locationController.dispose();
-    _imageUrlController.dispose();
     _organizerController.dispose();
     _websiteController.dispose();
     super.dispose();
@@ -325,24 +336,6 @@ class _DesignerEventsViewState extends State<DesignerEventsView> {
             // End Date
             _buildDateField('End Date', _endDate, () => _selectDate(false)),
             SizedBox(height: 15),
-            // Image URL
-            TextFormField(
-              controller: _imageUrlController,
-              decoration: InputDecoration(
-                labelText: 'Image URL',
-                labelStyle: TextStyle(color: Colors.white),
-                filled: true,
-                fillColor: Colors.white.withOpacity(0.2),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-              ),
-              style: TextStyle(color: TColor.white),
-            ),
-            SizedBox(height: 15),
             // Organizer
             TextFormField(
               controller: _organizerController,
@@ -384,6 +377,195 @@ class _DesignerEventsViewState extends State<DesignerEventsView> {
               ),
               style: TextStyle(color: TColor.white),
             ),
+            SizedBox(height: 15),
+            // Image upload section
+            Text(
+              "Event Image",
+              style: TextStyle(
+                color: TColor.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            SizedBox(height: 10),
+            Container(
+              padding: EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                children: [
+                  // Image preview area
+                  Container(
+                    height: 200,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: imageFile != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.file(
+                              imageFile!,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.image_outlined,
+                                  size: 50,
+                                  color: TColor.white.withOpacity(0.7),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  "No image selected",
+                                  style: TextStyle(
+                                    color: TColor.white.withOpacity(0.7),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                  ),
+                  SizedBox(height: 15),
+                  // Upload status indicator
+                  if (uploadStatus.isNotEmpty)
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 15,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isUploadSuccess
+                            ? Colors.green.withOpacity(0.2)
+                            : (isUploading
+                                ? Colors.blue.withOpacity(0.2)
+                                : Colors.red.withOpacity(0.2)),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isUploadSuccess
+                              ? Colors.green.withOpacity(0.5)
+                              : (isUploading
+                                  ? Colors.blue.withOpacity(0.5)
+                                  : Colors.red.withOpacity(0.5)),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isUploadSuccess
+                                ? Icons.check_circle
+                                : (isUploading ? Icons.upload : Icons.error),
+                            color: isUploadSuccess
+                                ? Colors.green
+                                : (isUploading ? Colors.blue : Colors.red),
+                            size: 18,
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              uploadStatus,
+                              style: TextStyle(
+                                color: TColor.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          if (isUploading)
+                            SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  TColor.primary,
+                                ),
+                                strokeWidth: 2,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  SizedBox(height: 15),
+                  // Action buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _pickImage,
+                          icon: Icon(
+                            Icons.image,
+                            color: TColor.white,
+                          ),
+                          label: Text(
+                            "Select Image",
+                            style: TextStyle(
+                              color: TColor.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: TColor.primary.withOpacity(0.8),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 15,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: isUploading ? null : _uploadImage,
+                          icon: Icon(
+                            isUploadSuccess ? Icons.check : Icons.upload,
+                            color: TColor.white,
+                          ),
+                          label: Text(
+                            isUploadSuccess ? "Uploaded" : "Upload",
+                            style: TextStyle(
+                              color: TColor.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isUploadSuccess
+                                ? Colors.green.withOpacity(0.7)
+                                : TColor.primary.withOpacity(0.8),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 15,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
             SizedBox(height: 20),
             // Submit button
             Center(
@@ -392,25 +574,6 @@ class _DesignerEventsViewState extends State<DesignerEventsView> {
                 title: "CREATE EVENT",
               ),
             ),
-            // ElevatedButton(
-            //   onPressed: _submitEvent,
-            //   style: ElevatedButton.styleFrom(
-            //     backgroundColor: TColor.primary,
-            //     padding: EdgeInsets.symmetric(vertical: 15),
-            //     shape: RoundedRectangleBorder(
-            //       borderRadius: BorderRadius.circular(10),
-            //     ),
-            //     minimumSize: Size(double.infinity, 50),
-            //   ),
-            //   child: Text(
-            //     'CREATE EVENT',
-            //     style: TextStyle(
-            //       color: TColor.white,
-            //       fontWeight: FontWeight.bold,
-            //       fontSize: 16,
-            //     ),
-            //   ),
-            // ),
           ],
         ),
       ),
@@ -490,6 +653,97 @@ class _DesignerEventsViewState extends State<DesignerEventsView> {
     }
   }
 
+  // Image picker method
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedFile =
+        await picker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      if (pickedFile != null) {
+        imageFile = File(pickedFile.path);
+        // Reset upload status when new image is selected
+        isUploadSuccess = false;
+        uploadStatus = 'Image selected. Ready to upload.';
+      } else {
+        uploadStatus = 'No image selected';
+      }
+    });
+  }
+
+  // Image upload method
+  Future<void> _uploadImage() async {
+    if (imageFile == null) {
+      setState(() {
+        uploadStatus = 'Please select an image first';
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select an image first')),
+      );
+      return;
+    }
+
+    setState(() {
+      isUploading = true;
+      uploadStatus = 'Uploading image...';
+    });
+
+    try {
+      final url = Uri.parse('https://api.cloudinary.com/v1_1/dvz3way0c/upload');
+      final request = http.MultipartRequest('Post', url)
+        ..fields['upload_preset'] = 'fashion'
+        ..files.add(await http.MultipartFile.fromPath('file', imageFile!.path));
+
+      final response = await request.send();
+
+      if (response.statusCode == 200) {
+        final responseData = await response.stream.toBytes();
+        final responseString = String.fromCharCodes(responseData);
+        final jsonMap = jsonDecode(responseString);
+
+        setState(() {
+          imageUrl = jsonMap['url'];
+          publicId = jsonMap['public_id'];
+          isUploading = false;
+          isUploadSuccess = true;
+          uploadStatus = 'Image uploaded successfully!';
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Image uploaded successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        setState(() {
+          isUploading = false;
+          isUploadSuccess = false;
+          uploadStatus = 'Upload failed. Please try again.';
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Image upload failed. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        isUploading = false;
+        isUploadSuccess = false;
+        uploadStatus = 'Upload error. Check connection.';
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Upload error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   Future<void> _submitEvent() async {
     if (_formKey.currentState!.validate()) {
       if (_startDate == null) {
@@ -502,6 +756,12 @@ class _DesignerEventsViewState extends State<DesignerEventsView> {
       }
       if (_endDate!.isBefore(_startDate!)) {
         _showErrorDialog('End date cannot be before start date');
+        return;
+      }
+
+      // Check if image is uploaded
+      if (!isUploadSuccess || publicId == null) {
+        _showErrorDialog('Please upload an event image');
         return;
       }
 
@@ -518,7 +778,7 @@ class _DesignerEventsViewState extends State<DesignerEventsView> {
           startDate: _startDate!,
           endDate: _endDate!,
           eventType: _selectedEventType,
-          imageUrl: _imageUrlController.text,
+          imageUrl: publicId!, // Use the uploaded image public ID
           organizer: _organizerController.text,
           website: _websiteController.text,
           designers: [designerId], // Add current designer to the event
@@ -529,16 +789,20 @@ class _DesignerEventsViewState extends State<DesignerEventsView> {
         // Add the event
         await storeController.addEvent(event);
 
-        // Clear form
+        // Clear form and image state
         _titleController.clear();
         _descriptionController.clear();
         _locationController.clear();
-        _imageUrlController.clear();
         _organizerController.clear();
         _websiteController.clear();
         setState(() {
           _startDate = null;
           _endDate = null;
+          // Reset image state
+          imageFile = null;
+          publicId = null;
+          isUploadSuccess = false;
+          uploadStatus = '';
         });
 
         // Show success message
